@@ -1,99 +1,357 @@
+/* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f0f0f0;
-    position: relative;
-    min-height: 100vh; /* Ensure the body takes full height of the screen */
-}
-
-.container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 50px; /* Add bottom margin to avoid overlapping with button */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: #fafafa;
+    overflow: hidden; /* Prevent scrollbars due to animated words */
 }
 
 h1 {
     color: #333;
+    font-size: 64px; /* Increased font size */
+    text-align: center; /* Center the heading */
+    margin-bottom: 30px;
 }
 
-#editor {
+.container {
     width: 100%;
-    max-width: 700px;
-    height: 150px;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    overflow-y: auto;
-}
-
-#status {
-    margin-top: 10px;
-    font-style: italic;
-    color: #666;
-}
-
-.generated {
-    color: #aaa;
-}
-
-/* Modal styling */
-.modal {
-    display: none;
-    position: fixed;
+    max-width: 1100px;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative; /* To position editor above animation */
     z-index: 1;
+}
+
+/* Editor Styles */
+#editor {
+    width: 100%; /* Responsive width */
+    height: 600px; /* Adjusted height */
+    padding: 20px;
+    margin: 20px auto 0 auto; /* Center the editor horizontally */
+    border: none; /* Removed border */
+    border-radius: 0; /* Removed border radius */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px; /* Increased font size */
+    line-height: 1.6;
+    overflow-y: auto;
+    background-color: #fafafa7d; /* Semi-transparent background for floating effect */
+    transition: background-color 0.3s;
+    box-sizing: border-box; /* Ensure padding doesn't affect total width */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    position: relative;
+    z-index: 2;
+}
+
+#editor:focus {
+    outline: none;
+    background-color: #fafafa7d; /* Slightly different background on focus */
+}
+
+#editor[contenteditable]:empty:before {
+    content: attr(placeholder);
+    color: #999;
+    font-style: italic;
+}
+
+/* Generated Text Styling */
+.generated {
+    color: grey; /* Initial grey color */
+    font-style: italic;
+}
+
+.accepted {
+    color: black; /* Turns black upon acceptance */
+    font-style: italic;
+}
+
+/* Hamburger Menu Button Styling */
+.hamburger-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 16px 24px;
+    background-color: #1a1a1a; /* Dark background */
+    color: #fff; /* White text for contrast */
+    border: none;
+    border-radius: 50px; /* Pill-shaped button for modern look */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
+    cursor: pointer;
+    font-size: 24px; /* Larger font size for visibility */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+    z-index: 4; /* Above other elements */
+}
+
+/* Hover effect for Hamburger Menu Button */
+.hamburger-btn:hover {
+    background-color: #404040; /* Darker background on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Slightly larger shadow on hover */
+    transform: translateY(-3px); /* Lift the button a bit */
+}
+
+/* Hamburger Menu Styling */
+.hamburger-menu {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 80px; /* Positioned above the hamburger button */
+    right: 30px;
+    width: 300px;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    z-index: 5; /* Above the hamburger button */
+    overflow: hidden;
+}
+
+.hamburger-menu .close-btn {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.hamburger-menu .close-btn:hover {
+    color: #820b0b;
+}
+
+.hamburger-menu .menu-content {
+    padding: 20px;
+}
+
+/* Model Selector Styles within Hamburger Menu */
+.model-selector {
+    margin-bottom: 20px;
+}
+
+.model-selector label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.model-selector select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.model-selector select:focus {
+    border-color: #000000;
+}
+
+/* API Key Button within Hamburger Menu */
+.menu-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #101010;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.menu-button:hover {
+    background-color: #404040;
+}
+
+/* Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 6; /* Above hamburger menu */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
 }
 
 .modal-content {
-    background-color: white;
-    margin: 15% auto;
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
-    border-radius: 8px;
-    max-width: 400px;
-    text-align: center;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
 }
 
-/* Modern API Key Button */
-#changeApiKeyBtn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background-color: #eee; /* Light grey background */
-    color: #333; /* Dark text for contrast */
-    border: none;
-    border-radius: 8px; /* Rounded corners for a modern look */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-    cursor: pointer;
-    font-size: 14px;
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
     font-weight: bold;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease; /* Smooth transition for hover effects */
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
 }
 
-/* Hover effect */
-#changeApiKeyBtn:hover {
-    background-color: #007BFF; /* Blue on hover */
-    color: white; /* White text on hover */
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Slightly larger shadow on hover */
-    transform: translateY(-2px); /* Lift the button a bit */
+.close-modal:hover,
+.close-modal:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
 }
 
-button:focus {
-    outline: none;
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 18px;
+}
+
+.modal-content button {
+    width: 100%;
+    padding: 15px;
+    background-color: #404040;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-content button:hover {
+    background-color: #555555;
+}
+
+/* Loading Screen Styles */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ffffff;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #404040;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1.5s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loader h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Smooth Scrollbar for Editor */
+#editor {
+    scrollbar-width: thin;
+    scrollbar-color: #404040 #f1f1f1;
+}
+
+#editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+#editor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#editor::-webkit-scrollbar-thumb {
+    background-color: #404040;
+    border-radius: 4px;
+    border: 2px solid #f1f1f1;
+}
+
+/* Animation Container Styles */
+.animation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks through the container */
+    overflow: hidden;
+    z-index: 0; /* Behind all other elements */
+}
+
+.animated-word {
+    position: absolute;
+    font-weight: bold;
+    color: rgba(100, 100, 100, 0.2);
+    user-select: none;
+    animation: scaleAndFade 5s linear forwards;
+    white-space: nowrap;
+}
+
+/* New Keyframes for Scale and Fade */
+@keyframes scaleAndFade {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+/* New Fade-Out Animation */
+.fade-out {
+    animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
