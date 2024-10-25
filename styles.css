@@ -4,20 +4,25 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     width: 100%;
     height: 100vh;
     margin: 0;
     padding: 0;
-    background-color: #fafafa;
+    background-color: #333333;
     overflow: hidden; /* Prevent scrollbars due to animated words */
+    color: #eeeeee;
+
+
 }
 
 h1 {
-    color: #333;
-    font-size: 64px; /* Increased font size */
+    color: #eeeeee;
+    font-size: 45px; /* Increased font size */
     text-align: center; /* Center the heading */
     margin-bottom: 30px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+
 }
 
 .container {
@@ -41,7 +46,7 @@ h1 {
     font-size: 24px; /* Increased font size */
     line-height: 1.6;
     overflow-y: auto;
-    background-color: #fafafa7d; /* Semi-transparent background for floating effect */
+    background-color: #333333;
     transition: background-color 0.3s;
     box-sizing: border-box; /* Ensure padding doesn't affect total width */
     scroll-behavior: smooth; /* Smooth scrolling */
@@ -51,24 +56,21 @@ h1 {
 
 #editor:focus {
     outline: none;
-    background-color: #fafafa7d; /* Slightly different background on focus */
+    background-color: #333333;
 }
 
 #editor[contenteditable]:empty:before {
     content: attr(placeholder);
-    color: #999;
-    font-style: italic;
+    color: #eeeeee;
 }
 
 /* Generated Text Styling */
 .generated {
     color: grey; /* Initial grey color */
-    font-style: italic;
 }
 
 .accepted {
-    color: black; /* Turns black upon acceptance */
-    font-style: italic;
+    color: #eeeeee;
 }
 
 /* Hamburger Menu Button Styling */
@@ -195,7 +197,7 @@ h1 {
 }
 
 .close-modal {
-    color: #aaa;
+    color: #eeeeee;
     float: right;
     font-size: 28px;
     font-weight: bold;
