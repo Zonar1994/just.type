@@ -141,8 +141,8 @@ function loadSelectedModel() {
     if (savedModel && modelDetails[savedModel]) {
         modelSelect.value = savedModel;
     } else {
-        // Default to the first available model
-        modelSelect.selectedIndex = 0;
+        // Default to 'llama-3.1-8b-instant'
+        modelSelect.value = 'llama-3.1-8b-instant';
     }
 }
 
@@ -329,9 +329,8 @@ async function generateNextSentence() {
             return;
         }
 
-        // Get the last sentence typed by the user
-        const sentences = text.match(/[^\.!\?]+[\.!\?]+|[^\.!\?]+$/g);
-        const lastSentence = sentences ? sentences[sentences.length - 1].trim() : text;
+        // Use the entire text history
+        const entireText = text;
 
         // Define the API call
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -347,7 +346,7 @@ async function generateNextSentence() {
                         role: 'system',
                         content: 'You are a helpful assistant that generates the next sentence based on the given text. Max 20 words. Respond with only the next sentence and never start with a capitalized first word unless it is "I" or a proper noun.'
                     },
-                    { role: 'user', content: lastSentence }
+                    { role: 'user', content: entireText }
                 ],
                 max_tokens: 50
             })
