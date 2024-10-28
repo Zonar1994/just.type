@@ -343,7 +343,7 @@ async function generateNextSentence() {
                     },
                     { role: 'user', content: entireText }
                 ],
-                max_tokens: 5000
+                max_tokens: 8000
             })
         });
 
