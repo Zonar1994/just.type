@@ -17,7 +17,6 @@ let isGenerating = false;
 let userIsTyping = false;
 let lastGeneratedContent = '';
 let isInitialRun = false; // Flag to track initial run
-let periodCount = 0; // Track number of periods
 
 // Model Details Object
 const modelDetails = {
@@ -130,8 +129,12 @@ closeBtn.addEventListener('click', () => {
 });
 
 // Close hamburger menu when clicking outside of it
-window.addEventListener('click', (event) => {
-    if (event.target == hamburgerMenu) {
+window.addEventListener('click', function(event) {
+    if (
+        hamburgerMenu.style.display === 'block' &&
+        !hamburgerMenu.contains(event.target) &&
+        event.target !== hamburgerBtn
+    ) {
         hamburgerMenu.style.display = 'none';
     }
 });
@@ -255,7 +258,7 @@ editor.addEventListener('input', (e) => {
 
     clearTimeout(typingTimer);
     const words = editor.innerText.trim().split(/\s+/);
-    if (words.length >= 3 && !isGenerating) { // Reverted back to 3
+    if (words.length >= 3 && !isGenerating) {
         typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
     }
 
@@ -349,7 +352,7 @@ async function generateNextSentence() {
                     },
                     { role: 'user', content: entireText }
                 ],
-                max_tokens: 4000
+                max_tokens: 8000
             })
         });
 
