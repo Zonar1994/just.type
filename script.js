@@ -76,6 +76,12 @@ const modelDetails = {
         contextWindow: '30,000 tokens',
         status: 'Available',
     },
+    // Added Mistral model
+    'mixtral-8x7b-32768': {
+        developer: 'Mistral',
+        contextWindow: '32,768 tokens',
+        status: 'Available',
+    },
 };
 
 // Open modal to enter API key
