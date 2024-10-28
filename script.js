@@ -17,12 +17,13 @@ let isGenerating = false;
 let userIsTyping = false;
 let lastGeneratedContent = '';
 let isInitialRun = false; // Flag to track initial run
+let periodCount = 0; // Track number of periods
 
 // Model Details Object
 const modelDetails = {
-    'mistral-8x7b-32768': {
-        developer: 'Mistral',
-        contextWindow: '32,768 tokens',
+    'llama-3.1-8b-instant': {
+        developer: 'Meta',
+        contextWindow: '20,000 tokens',
         status: 'Available',
     },
     'gemma-7b-it': {
@@ -38,11 +39,6 @@ const modelDetails = {
     'llama-3.1-70b-versatile': {
         developer: 'Meta',
         contextWindow: '6,000 tokens',
-        status: 'Available',
-    },
-    'llama-3.1-8b-instant': {
-        developer: 'Meta',
-        contextWindow: '20,000 tokens',
         status: 'Available',
     },
     'llama-3.2-11b-text-preview': {
@@ -253,7 +249,7 @@ editor.addEventListener('input', (e) => {
 
     clearTimeout(typingTimer);
     const words = editor.innerText.trim().split(/\s+/);
-    if (words.length >= 3 && !isGenerating) {
+    if (words.length >= 3 && !isGenerating) { // Reverted back to 3
         typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
     }
 
@@ -347,7 +343,7 @@ async function generateNextSentence() {
                     },
                     { role: 'user', content: entireText }
                 ],
-                max_tokens: 50
+                max_tokens: 5000
             })
         });
 
