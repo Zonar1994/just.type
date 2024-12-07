@@ -65,7 +65,7 @@ const modelDetails = {
         contextWindow: '15,000 tokens',
         status: 'Available',
     },
-    'lllama-3.3-70b-versatile': {
+    'llama-3.3-70b-versatile': {
         developer: 'Meta',
         contextWindow: '6,000 tokens',
         status: 'Available',
