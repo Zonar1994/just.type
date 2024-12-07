@@ -65,7 +65,7 @@ const modelDetails = {
         contextWindow: '15,000 tokens',
         status: 'Available',
     },
-    'llama3-70b-8192': {
+    'lllama-3.3-70b-versatile': {
         developer: 'Meta',
         contextWindow: '6,000 tokens',
         status: 'Available',
@@ -146,7 +146,7 @@ function loadSelectedModel() {
         modelSelect.value = savedModel;
     } else {
         // Default to 'llama-3.1-8b-instant'
-        modelSelect.value = 'llama-3.1-8b-instant';
+        modelSelect.value = 'llama-3.3-70b-versatile';
     }
 }
 
