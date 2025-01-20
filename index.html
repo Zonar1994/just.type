@@ -1,68 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Just Type</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Just Type</title>
+  <!-- Reference your unchanged CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader">
-            <div class="spinner"></div>
-            <h2>Loading Just Type...</h2>
-        </div>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader">
+      <div class="spinner"></div>
+      <h2>Loading Just Type...</h2>
     </div>
+  </div>
 
-    <!-- Modal for API Key -->
-    <div id="apiModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Enter your Groq API Key</h2>
-            <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
-            <button id="saveApiKeyBtn">Save API Key</button>
-        </div>
+  <!-- Modal for API Key -->
+  <div id="apiModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Enter your Groq API Key</h2>
+      <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
+      <button id="saveApiKeyBtn">Save API Key</button>
     </div>
+  </div>
 
-    <!-- Container for Editor and Animation -->
-    <div class="container">
-        <h1>just.<b>type</b></h1>
+  <!-- Container for Editor and Animation -->
+  <div class="container">
+    <h1>just.<b>type</b></h1>
+    <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
+  </div>
 
-        <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
+  <!-- Hamburger Menu Button -->
+  <button id="hamburgerBtn" class="hamburger-btn">&#9776;</button>
+
+  <!-- Hamburger Menu Content -->
+  <div id="hamburgerMenu" class="hamburger-menu">
+    <span class="close-btn">&times;</span>
+    <div class="menu-content">
+
+      <!-- Model Selection -->
+      <div class="model-selector">
+        <label for="modelSelect">Select Model:</label>
+        <select id="modelSelect">
+          <!-- Updated to show ONLY the seven models from your snippet -->
+          <option value="gemma2-9b-it">Gemma2 9B (IT)</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+          <option value="llama-guard-3-8b">Llama Guard 3 8B</option>
+          <option value="llama3-70b-8192">Llama3 70B 8192</option>
+          <option value="llama3-8b-8192">Llama3 8B 8192</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
+        </select>
+      </div>
+
+      <!-- API Key Button within Hamburger Menu -->
+      <button id="changeApiKeyBtn" class="menu-button">API KEY</button>
+
     </div>
+  </div>
 
-    <!-- Hamburger Menu Button -->
-    <button id="hamburgerBtn" class="hamburger-btn">&#9776;</button>
-
-    <!-- Hamburger Menu Content -->
-    <div id="hamburgerMenu" class="hamburger-menu">
-        <span class="close-btn">&times;</span>
-        <div class="menu-content">
-            <!-- Model Selection -->
-            <div class="model-selector">
-                <label for="modelSelect">Select Model:</label>
-                <select id="modelSelect">
-                    <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
-                    <option value="gemma-7b-it">Gemma 7B</option>
-                    <option value="gemma2-9b-it">Gemma2 9B</option>
-                    <option value="llama-3.1-70b-versatile">Llama 3.1 70B Versatile</option>
-                    <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
-                    <option value="llama-3.2-11b-text-preview">Llama 3.2 11B Text (Preview)</option>
-                    <option value="llama-3.2-1b-preview">Llama 3.2 1B (Preview)</option>
-                    <option value="llama-3.2-3b-preview">Llama 3.2 3B (Preview)</option>
-                    <option value="llama-3.2-90b-text-preview">Llama 3.2 90B Text (Preview)</option>
-                    <option value="llama-guard-3-8b">Llama Guard 3 8B</option>
-                    <option value="llama3-70b-8192">Llama3 70B 8192</option>
-                    <option value="llama3-8b-8192">Llama3 8B 8192</option>
-                </select>
-            </div>
-
-            <!-- API Key Button within Hamburger Menu -->
-            <button id="changeApiKeyBtn" class="menu-button">API KEY</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+  <!-- Reference your updated script.js -->
+  <script src="script.js"></script>
 </body>
 </html>
