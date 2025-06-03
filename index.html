@@ -8,7 +8,7 @@
   <!-- Reference your unchanged CSS -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="theme-terminal">
   <!-- Loading Screen -->
   <div id="loadingScreen" class="loading-screen">
     <div class="loader">
@@ -53,6 +53,21 @@
           <option value="llama3-70b-8192">Llama3 70B 8192</option>
           <option value="llama3-8b-8192">Llama3 8B 8192</option>
           <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
+        </select>
+      </div>
+
+      <!-- Theme Selection -->
+      <div class="theme-selector">
+        <label for="themeSelect">Select Theme:</label>
+        <select id="themeSelect">
+          <option value="terminal">Terminal Green</option>
+          <option value="solarized-light">Solarized Light</option>
+          <option value="solarized-dark">Solarized Dark</option>
+          <option value="midnight">Midnight Blue</option>
+          <option value="lavender">Lavender</option>
+          <option value="forest">Forest</option>
+          <option value="neon">Neon Pink</option>
+          <option value="cyberpunk">Cyberpunk</option>
         </select>
       </div>
 
