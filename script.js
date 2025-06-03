@@ -6,6 +6,7 @@ const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 const changeApiKeyBtn = document.getElementById('changeApiKeyBtn');
 const loadingScreen = document.getElementById('loadingScreen');
 const modelSelect = document.getElementById('modelSelect');
+const themeSelect = document.getElementById('themeSelect');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
 const closeBtn = document.querySelector('.close-btn');
@@ -115,6 +116,37 @@ function loadSelectedModel() {
   }
 }
 
+function applyTheme(theme) {
+  document.body.classList.remove(
+    'theme-terminal',
+    'theme-solarized-light',
+    'theme-solarized-dark',
+    'theme-midnight',
+    'theme-lavender',
+    'theme-forest',
+    'theme-neon',
+    'theme-cyberpunk'
+  );
+  document.body.classList.add(`theme-${theme}`);
+}
+
+function loadSelectedTheme() {
+  const savedTheme = localStorage.getItem('selectedTheme');
+  if (savedTheme) {
+    themeSelect.value = savedTheme;
+    applyTheme(savedTheme);
+  } else {
+    themeSelect.value = 'terminal';
+    applyTheme('terminal');
+  }
+}
+
+themeSelect.addEventListener('change', () => {
+  const selectedTheme = themeSelect.value;
+  applyTheme(selectedTheme);
+  localStorage.setItem('selectedTheme', selectedTheme);
+});
+
 modelSelect.addEventListener('change', () => {
   const selectedModel = modelSelect.value;
   localStorage.setItem('selectedModel', selectedModel);
@@ -125,6 +157,7 @@ window.addEventListener('load', () => {
   loadingScreen.style.display = 'none';
   loadApiKey();
   loadSelectedModel();
+  loadSelectedTheme();
   handleInitialRun();
   initializeMutationObserver();
 });
