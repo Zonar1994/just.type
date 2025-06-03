@@ -149,12 +149,14 @@ function insertGeneratedSentence(sentence, isInitial = false) {
   generatedSpan.classList.add('generated');
   editor.appendChild(generatedSpan);
 
+  const needsSpace = /\S$/.test(editor.textContent);
   const words = sentence.split(' ');
   let wordIndex = 0;
 
   function typeNextWord() {
     if (wordIndex < words.length) {
-      generatedSpan.textContent += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
+      const prefix = wordIndex === 0 ? (needsSpace ? ' ' : '') : ' ';
+      generatedSpan.textContent += prefix + words[wordIndex];
       wordIndex++;
       scrollToBottom();
       setTimeout(typeNextWord, 50);
