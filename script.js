@@ -11,6 +11,10 @@ const hamburgerBtn = document.getElementById('hamburgerBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
 const closeBtn = document.querySelector('.close-btn');
 const closeModalBtn = document.querySelector('.close-modal');
+const systemPromptInput = document.getElementById('systemPrompt');
+
+const DEFAULT_SYSTEM_PROMPT =
+  'You are a helpful assistant that generates the next sentence based on the given text. Max 20 words. Respond with only the next sentence and never start with a capitalized first word unless it is "I" or a proper noun.';
 
 let typingTimer;
 const doneTypingInterval = 1000; // 1 second
@@ -72,6 +76,19 @@ function loadApiKey() {
     openApiModal();
   }
 }
+
+function loadSystemPrompt() {
+  const savedPrompt = localStorage.getItem('systemPrompt');
+  if (savedPrompt) {
+    systemPromptInput.value = savedPrompt;
+  } else {
+    systemPromptInput.value = DEFAULT_SYSTEM_PROMPT;
+  }
+}
+
+systemPromptInput.addEventListener('change', () => {
+  localStorage.setItem('systemPrompt', systemPromptInput.value);
+});
 
 saveApiKeyBtn.addEventListener('click', () => {
   const apiKey = modalApiKeyInput.value.trim();
@@ -158,6 +175,7 @@ window.addEventListener('load', () => {
   loadApiKey();
   loadSelectedModel();
   loadSelectedTheme();
+  loadSystemPrompt();
   handleInitialRun();
   initializeMutationObserver();
 });
@@ -307,6 +325,8 @@ async function generateNextSentence() {
     const entireText = text;
 
     // Example: Adjust to your actual endpoint and request shape
+    const systemPrompt = localStorage.getItem('systemPrompt') || DEFAULT_SYSTEM_PROMPT;
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -318,10 +338,7 @@ async function generateNextSentence() {
         messages: [
           {
             role: 'system',
-            content:
-              'You are a helpful assistant that generates the next sentence based on the given text. ' +
-              'Max 20 words. Respond with only the next sentence and never start with a capitalized first ' +
-              'word unless it is "I" or a proper noun.',
+            content: systemPrompt,
           },
           { role: 'user', content: entireText },
         ],

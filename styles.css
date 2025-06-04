@@ -190,6 +190,35 @@ h1 {
     border-color: var(--text-color);
 }
 
+/* System Prompt Config */
+.prompt-config {
+    margin-bottom: 20px;
+}
+
+.prompt-config label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.prompt-config textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid var(--text-color);
+    border-radius: 4px;
+    outline: none;
+    resize: vertical;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'VT323', 'Courier New', Courier, monospace;
+}
+
+.prompt-config textarea:focus {
+    border-color: var(--text-color);
+}
+
 /* API Key Button within Hamburger Menu */
 .menu-button {
     width: 100%;
