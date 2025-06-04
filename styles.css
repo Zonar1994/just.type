@@ -142,6 +142,41 @@ h1 {
     font-family: 'VT323', 'Courier New', Courier, monospace;
 }
 
+/* Word Count Display */
+.word-count {
+    margin-top: 10px;
+    font-size: 18px;
+    text-align: right;
+}
+
+/* Model Info Display */
+.model-info {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+/* Prompt Input */
+.prompt-input {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid var(--text-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'VT323', 'Courier New', Courier, monospace;
+}
+
+/* Toggle labels */
+.toggle {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
 /* Model Selector Styles within Hamburger Menu */
 .model-selector {
     margin-bottom: 20px;
