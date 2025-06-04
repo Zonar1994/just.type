@@ -11,6 +11,7 @@ const hamburgerBtn = document.getElementById('hamburgerBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
 const closeBtn = document.querySelector('.close-btn');
 const closeModalBtn = document.querySelector('.close-modal');
+const wordCountDisplay = document.getElementById('wordCount');
 
 let typingTimer;
 const doneTypingInterval = 1000; // 1 second
@@ -236,7 +237,11 @@ function initializeMutationObserver() {
 editor.addEventListener('input', () => {
   if (!userIsTyping) return;
   clearTimeout(typingTimer);
-  const words = editor.innerText.trim().split(/\s+/);
+  const text = editor.innerText.trim();
+  const words = text ? text.split(/\s+/) : [];
+  if (wordCountDisplay) {
+    wordCountDisplay.textContent = `Word Count: ${words.length}`;
+  }
   if (words.length >= 3 && !isGenerating) {
     typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
   }
