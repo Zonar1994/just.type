@@ -1,508 +1,91 @@
-// ------------------- DOM ELEMENTS -------------------
-const editor = document.getElementById('editor');
-const modal = document.getElementById('apiModal');
-const modalApiKeyInput = document.getElementById('modalApiKey');
-const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-const changeApiKeyBtn = document.getElementById('changeApiKeyBtn');
-const loadingScreen = document.getElementById('loadingScreen');
-const modelSelect = document.getElementById('modelSelect');
-const themeSelect = document.getElementById('themeSelect');
-const hamburgerBtn = document.getElementById('hamburgerBtn');
-const hamburgerMenu = document.getElementById('hamburgerMenu');
-const closeBtn = document.querySelector('.close-btn');
-const closeModalBtn = document.querySelector('.close-modal');
-const wordCountDisplay = document.getElementById('wordCount');
-const promptInput = document.getElementById('promptInput');
-const asciiBtn = document.getElementById('asciiBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const modelInfo = document.getElementById('modelInfo');
-const chaosToggle = document.getElementById('chaosToggle');
-const voiceToggle = document.getElementById('voiceToggle');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Just Type</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <!-- Reference your unchanged CSS -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-terminal">
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader">
+      <div class="spinner"></div>
+      <h2>Loading Just Type...</h2>
+    </div>
+  </div>
 
-let typingTimer;
-const doneTypingInterval = 1000; // 1 second
-let isGenerating = false;
-let userIsTyping = false;
-let lastGeneratedContent = '';
-let isInitialRun = false; // Flag to track initial run
-let keySequence = [];
-const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  <!-- Modal for API Key -->
+  <div id="apiModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Enter your Groq API Key</h2>
+      <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
+      <button id="saveApiKeyBtn">Save API Key</button>
+    </div>
+  </div>
 
-// ------------------- MODEL DETAILS (UPDATED) -------------------
-const modelDetails = {
-  'gemma2-9b-it': {
-    developer: 'Google',
-    contextWindow: '8,192 tokens',
-    status: 'Available',
-  },
-  'llama-3.3-70b-versatile': {
-    developer: 'Meta',
-    contextWindow: '128k tokens',
-    status: 'Available',
-  },
-  'llama-3.1-8b-instant': {
-    developer: 'Meta',
-    contextWindow: '128k tokens',
-    status: 'Available',
-  },
-  'llama-guard-3-8b': {
-    developer: 'Meta',
-    contextWindow: '8,192 tokens',
-    status: 'Available',
-  },
-  'llama3-70b-8192': {
-    developer: 'Meta',
-    contextWindow: '8,192 tokens',
-    status: 'Available',
-  },
-  'llama3-8b-8192': {
-    developer: 'Meta',
-    contextWindow: '8,192 tokens',
-    status: 'Available',
-  },
-  'mixtral-8x7b-32768': {
-    developer: 'Mistral',
-    contextWindow: '32,768 tokens',
-    status: 'Available',
-  },
-};
+  <!-- Container for Editor and Animation -->
+  <div class="container">
+    <h1>just.<b>type</b></h1>
+    <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
+    <div id="wordCount">Word Count: 0</div>
+  </div>
 
-// ------------------- MODAL HANDLERS -------------------
-function openApiModal() {
-  modal.style.display = 'block';
-}
-function closeApiModal() {
-  modal.style.display = 'none';
-}
+  <!-- Hamburger Menu Button -->
+  <button id="hamburgerBtn" class="hamburger-btn">&#9776;</button>
 
-function loadApiKey() {
-  const savedApiKey = localStorage.getItem('groqApiKey');
-  if (!savedApiKey) {
-    openApiModal();
-  }
-}
+  <!-- Hamburger Menu Content -->
+  <div id="hamburgerMenu" class="hamburger-menu">
+    <span class="close-btn">&times;</span>
+    <div class="menu-content">
 
-saveApiKeyBtn.addEventListener('click', () => {
-  const apiKey = modalApiKeyInput.value.trim();
-  if (apiKey) {
-    localStorage.setItem('groqApiKey', apiKey);
-    closeApiModal();
-  } else {
-    alert('API Key cannot be empty');
-  }
-});
+      <!-- Model Selection -->
+      <div class="model-selector">
+        <label for="modelSelect">Select Model:</label>
+        <select id="modelSelect">
+          <!-- Updated to show ONLY the seven models from your snippet -->
+          <option value="gemma2-9b-it">Gemma2 9B (IT)</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+          <option value="llama-guard-3-8b">Llama Guard 3 8B</option>
+          <option value="llama3-70b-8192">Llama3 70B 8192</option>
+          <option value="llama3-8b-8192">Llama3 8B 8192</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
+        </select>
+      </div>
+      <div id="modelInfo" class="model-info"></div>
 
-closeModalBtn.addEventListener('click', closeApiModal);
-changeApiKeyBtn.addEventListener('click', openApiModal);
+      <!-- Theme Selection -->
+      <div class="theme-selector">
+        <label for="themeSelect">Select Theme:</label>
+        <select id="themeSelect">
+          <option value="terminal">Terminal Green</option>
+          <option value="solarized-light">Solarized Light</option>
+          <option value="solarized-dark">Solarized Dark</option>
+          <option value="midnight">Midnight Blue</option>
+          <option value="lavender">Lavender</option>
+          <option value="forest">Forest</option>
+          <option value="neon">Neon Pink</option>
+          <option value="cyberpunk">Cyberpunk</option>
+        </select>
+      </div>
 
-// ------------------- HAMBURGER MENU -------------------
-hamburgerBtn.addEventListener('click', () => {
-  hamburgerMenu.style.display = 'block';
-});
+      <!-- System Prompt -->
+      <div class="prompt-config">
+        <label for="systemPrompt">System Prompt:</label>
+        <textarea id="systemPrompt" rows="4" placeholder="Enter system prompt"></textarea>
+      </div>
 
-closeBtn.addEventListener('click', () => {
-  hamburgerMenu.style.display = 'none';
-});
+      <!-- API Key Button within Hamburger Menu -->
+      <button id="changeApiKeyBtn" class="menu-button">API KEY</button>
 
-window.addEventListener('click', function(event) {
-  if (
-    hamburgerMenu.style.display === 'block' &&
-    !hamburgerMenu.contains(event.target) &&
-    event.target !== hamburgerBtn
-  ) {
-    hamburgerMenu.style.display = 'none';
-  }
-});
+    </div>
+  </div>
 
-// ------------------- MODEL SELECTION STORAGE -------------------
-function loadSelectedModel() {
-  const savedModel = localStorage.getItem('selectedModel');
-  if (savedModel && modelDetails[savedModel]) {
-    modelSelect.value = savedModel;
-  } else {
-    // Default to the first in your updated list
-    modelSelect.value = 'gemma2-9b-it';
-  }
-  updateModelInfo();
-}
-
-function updateModelInfo() {
-  const details = modelDetails[modelSelect.value];
-  if (details) {
-    modelInfo.textContent = `${details.developer} - ${details.contextWindow}`;
-  }
-}
-
-function loadEditorContent() {
-  const saved = localStorage.getItem('editorContent');
-  if (saved) {
-    editor.innerText = saved;
-    updateWordCount();
-  }
-}
-
-function loadPrompt() {
-  const saved = localStorage.getItem('systemPrompt');
-  if (saved) {
-    promptInput.value = saved;
-  }
-}
-
-promptInput.addEventListener('input', () => {
-  localStorage.setItem('systemPrompt', promptInput.value);
-});
-
-function updateWordCount() {
-  const count = editor.innerText.trim().split(/\s+/).filter(Boolean).length;
-  wordCountDisplay.textContent = `${count} words`;
-}
-
-function flashRandomColor() {
-  const original = getComputedStyle(document.body).backgroundColor;
-  const randomColor = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-  document.body.style.backgroundColor = randomColor;
-  setTimeout(() => {
-    document.body.style.backgroundColor = '';
-  }, 100);
-}
-
-function applyTheme(theme) {
-  document.body.classList.remove(
-    'theme-terminal',
-    'theme-solarized-light',
-    'theme-solarized-dark',
-    'theme-midnight',
-    'theme-lavender',
-    'theme-forest',
-    'theme-neon',
-    'theme-cyberpunk'
-  );
-  document.body.classList.add(`theme-${theme}`);
-}
-
-function loadSelectedTheme() {
-  const savedTheme = localStorage.getItem('selectedTheme');
-  if (savedTheme) {
-    themeSelect.value = savedTheme;
-    applyTheme(savedTheme);
-  } else {
-    themeSelect.value = 'terminal';
-    applyTheme('terminal');
-  }
-}
-
-themeSelect.addEventListener('change', () => {
-  const selectedTheme = themeSelect.value;
-  applyTheme(selectedTheme);
-  localStorage.setItem('selectedTheme', selectedTheme);
-});
-
-modelSelect.addEventListener('change', () => {
-  const selectedModel = modelSelect.value;
-  localStorage.setItem('selectedModel', selectedModel);
-  updateModelInfo();
-});
-
-downloadBtn.addEventListener('click', () => {
-  const blob = new Blob([editor.innerText], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'justtype.txt';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-asciiBtn.addEventListener('click', generateAsciiArt);
-
-// ------------------- INITIAL LOAD -------------------
-window.addEventListener('load', () => {
-  loadingScreen.style.display = 'none';
-  loadApiKey();
-  loadSelectedModel();
-  loadSelectedTheme();
-  loadEditorContent();
-  loadPrompt();
-  handleInitialRun();
-  initializeMutationObserver();
-  updateModelInfo();
-  updateWordCount();
-});
-
-function handleInitialRun() {
-  const hasRunBefore = localStorage.getItem('hasRunBefore');
-  if (!hasRunBefore) {
-    isInitialRun = true;
-    localStorage.setItem('hasRunBefore', 'true');
-    alert('Generating...');
-    insertGeneratedSentence('this is how it generates the rest of your sentence.', true);
-    setTimeout(() => {
-      displayInstructionMessage();
-      scrollToBottom();
-    }, 2000);
-  }
-}
-
-// ------------------- TEXT GENERATION LOGIC -------------------
-function insertGeneratedSentence(sentence, isInitial = false) {
-  const generatedSpan = document.createElement('span');
-  generatedSpan.classList.add('generated');
-  editor.appendChild(generatedSpan);
-
-  const needsSpace = /\S$/.test(editor.textContent);
-  const words = sentence.split(' ');
-  let wordIndex = 0;
-
-  function typeNextWord() {
-    if (wordIndex < words.length) {
-      const prefix = wordIndex === 0 ? (needsSpace ? ' ' : '') : ' ';
-      generatedSpan.textContent += prefix + words[wordIndex];
-      wordIndex++;
-      scrollToBottom();
-      setTimeout(typeNextWord, 50);
-    } else {
-      if (isInitialRun && isInitial) {
-        displayInstructionMessage();
-      }
-      scrollToBottom();
-    }
-  }
-  typeNextWord();
-}
-
-function displayInstructionMessage() {
-  if (document.getElementById('instructionMessage')) return;
-  const instruction = document.createElement('div');
-  instruction.id = 'instructionMessage';
-  instruction.innerHTML = '<em>press enter to keep the generated text or just type</em>';
-  instruction.style.marginTop = '10px';
-  editor.appendChild(instruction);
-  scrollToBottom();
-}
-
-function removeInstructionMessage() {
-  const instruction = document.getElementById('instructionMessage');
-  if (instruction) {
-    instruction.remove();
-  }
-}
-
-function scrollToBottom() {
-  requestAnimationFrame(() => {
-    editor.scrollTop = editor.scrollHeight;
-  });
-}
-
-function initializeMutationObserver() {
-  const observer = new MutationObserver(() => {
-    scrollToBottom();
-  });
-  observer.observe(editor, { childList: true, subtree: true, characterData: true });
-}
-
-editor.addEventListener('input', () => {
-  if (!userIsTyping) return;
-  clearTimeout(typingTimer);
-  const words = editor.innerText.trim().split(/\s+/);
-  if (words.length >= 3 && !isGenerating) {
-    typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
-  }
-  const generatedSpan = editor.querySelector('.generated');
-  if (generatedSpan) {
-    generatedSpan.remove();
-  }
-  localStorage.setItem('editorContent', editor.innerText);
-  updateWordCount();
-});
-
-editor.addEventListener('keydown', (e) => {
-  userIsTyping = true;
-  if (chaosToggle.checked) {
-    flashRandomColor();
-  }
-  keySequence.push(e.key);
-  if (keySequence.length > konami.length) keySequence.shift();
-  if (konami.every((v, i) => keySequence[i] === v)) {
-    alert('Easter Egg Unlocked!');
-    applyTheme('neon');
-    keySequence = [];
-  }
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const generatedSpan = editor.querySelector('.generated');
-    if (generatedSpan) {
-      generatedSpan.classList.remove('generated');
-      generatedSpan.classList.add('accepted');
-      placeCaretAtEnd(editor);
-    }
-    if (document.getElementById('instructionMessage')) {
-      removeInstructionMessage();
-      scrollToBottom();
-    }
-  } else if (e.key === 'Backspace' || e.key === 'Delete') {
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const generatedSpan = editor.querySelector('.generated');
-      if (generatedSpan && range.intersectsNode(generatedSpan)) {
-        clearTimeout(typingTimer);
-      }
-    }
-  }
-});
-
-editor.addEventListener('keyup', (e) => {
-  if (e.key !== 'Backspace' && e.key !== 'Delete') {
-    userIsTyping = false;
-  }
-  updateWordCount();
-});
-
-async function generateNextSentence() {
-  const apiKey = localStorage.getItem('groqApiKey');
-  const text = editor.innerText.trim();
-
-  if (!apiKey) {
-    alert('Please enter your Groq API Key');
-    return;
-  }
-
-  if (!text) {
-    alert('Please enter some text');
-    return;
-  }
-
-  isGenerating = true;
-
-  try {
-    const selectedModel = modelSelect.value;
-    const selectedModelDetails = modelDetails[selectedModel];
-    if (!selectedModelDetails || selectedModelDetails.status === 'Offline') {
-      alert('The selected model is currently unavailable. Please choose another model.');
-      isGenerating = false;
-      return;
-    }
-
-    // Use the entire text history
-    const entireText = text;
-
-    const systemPrompt = promptInput.value.trim() ||
-      'You are a helpful assistant that generates the next sentence based on the given text. ' +
-      'Max 20 words. Respond with only the next sentence and never start with a capitalized first ' +
-      'word unless it is "I" or a proper noun.';
-
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: selectedModel,
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt,
-          },
-          { role: 'user', content: entireText },
-        ],
-        max_tokens: 8000,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('API request failed');
-    }
-
-    const data = await response.json();
-    const generatedSentence = data.choices[0].message.content.trim();
-
-    if (!generatedSentence) {
-      throw new Error('Received empty response from API.');
-    }
-
-    insertGeneratedSentence(generatedSentence);
-    if (voiceToggle.checked) {
-      speakSentence(generatedSentence);
-    }
-    lastGeneratedContent = generatedSentence;
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-    console.error('Error in generateNextSentence:', error);
-  } finally {
-    isGenerating = false;
-  }
-}
-
-async function generateAsciiArt() {
-  const apiKey = localStorage.getItem('groqApiKey');
-  const text = editor.innerText.trim();
-  if (!apiKey || !text) {
-    alert('Need text and API key');
-    return;
-  }
-
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: modelSelect.value,
-        messages: [
-          { role: 'system', content: 'Create a short ASCII art (max 3 lines) summarizing the following text.' },
-          { role: 'user', content: text },
-        ],
-        max_tokens: 800,
-      }),
-    });
-
-    if (!response.ok) throw new Error('API request failed');
-
-    const data = await response.json();
-    const art = data.choices[0].message.content.trim();
-    const pre = document.createElement('pre');
-    pre.classList.add('generated');
-    pre.textContent = art;
-    editor.appendChild(pre);
-    scrollToBottom();
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
-
-function speakSentence(sentence) {
-  if (!window.speechSynthesis) return;
-  const utter = new SpeechSynthesisUtterance(sentence);
-  const voices = speechSynthesis.getVoices();
-  if (voices.length) {
-    utter.voice = voices[Math.floor(Math.random() * voices.length)];
-  }
-  speechSynthesis.speak(utter);
-}
-
-function placeCaretAtEnd(el) {
-  el.focus();
-  if (typeof window.getSelection !== 'undefined' && typeof document.createRange !== 'undefined') {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  } else if (typeof document.body.createTextRange !== 'undefined') {
-    const textRange = document.body.createTextRange();
-    textRange.moveToElementText(el);
-    textRange.collapse(false);
-    textRange.select();
-  }
-}
-
-// Close modal when clicking outside of it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = 'none';
-  }
-};
+  <!-- Reference your updated script.js -->
+  <script src="script.js"></script>
+</body>
+</html>

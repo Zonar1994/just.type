@@ -31,7 +31,7 @@
   <div class="container">
     <h1>just.<b>type</b></h1>
     <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
-    <div id="wordCount" class="word-count">0 words</div>
+    <div id="wordCount">Word Count: 0</div>
   </div>
 
   <!-- Hamburger Menu Button -->
@@ -73,17 +73,11 @@
         </select>
       </div>
 
-      <textarea id="promptInput" class="prompt-input" placeholder="System prompt..."></textarea>
-
-      <label class="toggle">
-        <input type="checkbox" id="chaosToggle" /> Chaos Mode
-      </label>
-      <label class="toggle">
-        <input type="checkbox" id="voiceToggle" /> Voice Mode
-      </label>
-
-      <button id="asciiBtn" class="menu-button">ASCII Summary</button>
-      <button id="downloadBtn" class="menu-button">Download Text</button>
+      <!-- System Prompt -->
+      <div class="prompt-config">
+        <label for="systemPrompt">System Prompt:</label>
+        <textarea id="systemPrompt" rows="4" placeholder="Enter system prompt"></textarea>
+      </div>
 
       <!-- API Key Button within Hamburger Menu -->
       <button id="changeApiKeyBtn" class="menu-button">API KEY</button>
