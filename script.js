@@ -11,6 +11,13 @@ const hamburgerBtn = document.getElementById('hamburgerBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
 const closeBtn = document.querySelector('.close-btn');
 const closeModalBtn = document.querySelector('.close-modal');
+const wordCountDisplay = document.getElementById('wordCount');
+const promptInput = document.getElementById('promptInput');
+const asciiBtn = document.getElementById('asciiBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const modelInfo = document.getElementById('modelInfo');
+const chaosToggle = document.getElementById('chaosToggle');
+const voiceToggle = document.getElementById('voiceToggle');
 
 let typingTimer;
 const doneTypingInterval = 1000; // 1 second
@@ -18,6 +25,8 @@ let isGenerating = false;
 let userIsTyping = false;
 let lastGeneratedContent = '';
 let isInitialRun = false; // Flag to track initial run
+let keySequence = [];
+const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 
 // ------------------- MODEL DETAILS (UPDATED) -------------------
 const modelDetails = {
@@ -114,6 +123,47 @@ function loadSelectedModel() {
     // Default to the first in your updated list
     modelSelect.value = 'gemma2-9b-it';
   }
+  updateModelInfo();
+}
+
+function updateModelInfo() {
+  const details = modelDetails[modelSelect.value];
+  if (details) {
+    modelInfo.textContent = `${details.developer} - ${details.contextWindow}`;
+  }
+}
+
+function loadEditorContent() {
+  const saved = localStorage.getItem('editorContent');
+  if (saved) {
+    editor.innerText = saved;
+    updateWordCount();
+  }
+}
+
+function loadPrompt() {
+  const saved = localStorage.getItem('systemPrompt');
+  if (saved) {
+    promptInput.value = saved;
+  }
+}
+
+promptInput.addEventListener('input', () => {
+  localStorage.setItem('systemPrompt', promptInput.value);
+});
+
+function updateWordCount() {
+  const count = editor.innerText.trim().split(/\s+/).filter(Boolean).length;
+  wordCountDisplay.textContent = `${count} words`;
+}
+
+function flashRandomColor() {
+  const original = getComputedStyle(document.body).backgroundColor;
+  const randomColor = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+  document.body.style.backgroundColor = randomColor;
+  setTimeout(() => {
+    document.body.style.backgroundColor = '';
+  }, 100);
 }
 
 function applyTheme(theme) {
@@ -150,7 +200,20 @@ themeSelect.addEventListener('change', () => {
 modelSelect.addEventListener('change', () => {
   const selectedModel = modelSelect.value;
   localStorage.setItem('selectedModel', selectedModel);
+  updateModelInfo();
 });
+
+downloadBtn.addEventListener('click', () => {
+  const blob = new Blob([editor.innerText], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'justtype.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+asciiBtn.addEventListener('click', generateAsciiArt);
 
 // ------------------- INITIAL LOAD -------------------
 window.addEventListener('load', () => {
@@ -158,8 +221,12 @@ window.addEventListener('load', () => {
   loadApiKey();
   loadSelectedModel();
   loadSelectedTheme();
+  loadEditorContent();
+  loadPrompt();
   handleInitialRun();
   initializeMutationObserver();
+  updateModelInfo();
+  updateWordCount();
 });
 
 function handleInitialRun() {
@@ -244,10 +311,22 @@ editor.addEventListener('input', () => {
   if (generatedSpan) {
     generatedSpan.remove();
   }
+  localStorage.setItem('editorContent', editor.innerText);
+  updateWordCount();
 });
 
 editor.addEventListener('keydown', (e) => {
   userIsTyping = true;
+  if (chaosToggle.checked) {
+    flashRandomColor();
+  }
+  keySequence.push(e.key);
+  if (keySequence.length > konami.length) keySequence.shift();
+  if (konami.every((v, i) => keySequence[i] === v)) {
+    alert('Easter Egg Unlocked!');
+    applyTheme('neon');
+    keySequence = [];
+  }
   if (e.key === 'Enter') {
     e.preventDefault();
     const generatedSpan = editor.querySelector('.generated');
@@ -276,6 +355,7 @@ editor.addEventListener('keyup', (e) => {
   if (e.key !== 'Backspace' && e.key !== 'Delete') {
     userIsTyping = false;
   }
+  updateWordCount();
 });
 
 async function generateNextSentence() {
@@ -306,7 +386,11 @@ async function generateNextSentence() {
     // Use the entire text history
     const entireText = text;
 
-    // Example: Adjust to your actual endpoint and request shape
+    const systemPrompt = promptInput.value.trim() ||
+      'You are a helpful assistant that generates the next sentence based on the given text. ' +
+      'Max 20 words. Respond with only the next sentence and never start with a capitalized first ' +
+      'word unless it is "I" or a proper noun.';
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -318,10 +402,7 @@ async function generateNextSentence() {
         messages: [
           {
             role: 'system',
-            content:
-              'You are a helpful assistant that generates the next sentence based on the given text. ' +
-              'Max 20 words. Respond with only the next sentence and never start with a capitalized first ' +
-              'word unless it is "I" or a proper noun.',
+            content: systemPrompt,
           },
           { role: 'user', content: entireText },
         ],
@@ -341,6 +422,9 @@ async function generateNextSentence() {
     }
 
     insertGeneratedSentence(generatedSentence);
+    if (voiceToggle.checked) {
+      speakSentence(generatedSentence);
+    }
     lastGeneratedContent = generatedSentence;
   } catch (error) {
     alert(`Error: ${error.message}`);
@@ -348,6 +432,55 @@ async function generateNextSentence() {
   } finally {
     isGenerating = false;
   }
+}
+
+async function generateAsciiArt() {
+  const apiKey = localStorage.getItem('groqApiKey');
+  const text = editor.innerText.trim();
+  if (!apiKey || !text) {
+    alert('Need text and API key');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelSelect.value,
+        messages: [
+          { role: 'system', content: 'Create a short ASCII art (max 3 lines) summarizing the following text.' },
+          { role: 'user', content: text },
+        ],
+        max_tokens: 800,
+      }),
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+
+    const data = await response.json();
+    const art = data.choices[0].message.content.trim();
+    const pre = document.createElement('pre');
+    pre.classList.add('generated');
+    pre.textContent = art;
+    editor.appendChild(pre);
+    scrollToBottom();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+function speakSentence(sentence) {
+  if (!window.speechSynthesis) return;
+  const utter = new SpeechSynthesisUtterance(sentence);
+  const voices = speechSynthesis.getVoices();
+  if (voices.length) {
+    utter.voice = voices[Math.floor(Math.random() * voices.length)];
+  }
+  speechSynthesis.speak(utter);
 }
 
 function placeCaretAtEnd(el) {
