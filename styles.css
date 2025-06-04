@@ -79,6 +79,14 @@ h1 {
     color: var(--text-color);
 }
 
+/* Word Count Display */
+#wordCount {
+    margin-top: 10px;
+    font-size: 18px;
+    text-align: right;
+    color: var(--text-color);
+}
+
 /* Hamburger Menu Button Styling */
 .hamburger-btn {
     position: fixed;
