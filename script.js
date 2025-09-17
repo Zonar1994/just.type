@@ -6,6 +6,7 @@ const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 const changeApiKeyBtn = document.getElementById('changeApiKeyBtn');
 const loadingScreen = document.getElementById('loadingScreen');
 const modelSelect = document.getElementById('modelSelect');
+const modelInfo = document.getElementById('modelInfo');
 const themeSelect = document.getElementById('themeSelect');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
@@ -13,6 +14,11 @@ const closeBtn = document.querySelector('.close-btn');
 const closeModalBtn = document.querySelector('.close-modal');
 const wordCountDisplay = document.getElementById('wordCount');
 const systemPromptInput = document.getElementById('systemPrompt');
+const appDetail = document.getElementById('appDetail');
+const closeDetailBtn = document.querySelector('.close-detail');
+const appShells = document.querySelectorAll('.app-shell');
+const appCards = document.querySelectorAll('.app-card');
+const launchTriggers = document.querySelectorAll('[data-launch]');
 
 let typingTimer;
 const doneTypingInterval = 1000; // 1 second
@@ -20,6 +26,8 @@ let isGenerating = false;
 let userIsTyping = false;
 let lastGeneratedContent = '';
 let isInitialRun = false; // Flag to track initial run
+let isJustTypeInitialized = false;
+let mutationObserver;
 
 // ------------------- MODEL DETAILS (UPDATED) -------------------
 const modelDetails = {
@@ -62,10 +70,14 @@ const modelDetails = {
 
 // ------------------- MODAL HANDLERS -------------------
 function openApiModal() {
-  modal.style.display = 'block';
+  if (modal) {
+    modal.style.display = 'flex';
+  }
 }
 function closeApiModal() {
-  modal.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 function loadApiKey() {
@@ -76,6 +88,7 @@ function loadApiKey() {
 }
 
 function loadSystemPrompt() {
+  if (!systemPromptInput) return;
   const savedPrompt = localStorage.getItem('systemPrompt');
   if (savedPrompt) {
     systemPromptInput.value = savedPrompt;
@@ -84,39 +97,64 @@ function loadSystemPrompt() {
   }
 }
 
-systemPromptInput.addEventListener('change', () => {
-  localStorage.setItem('systemPrompt', systemPromptInput.value);
-});
+if (systemPromptInput) {
+  systemPromptInput.addEventListener('change', () => {
+    localStorage.setItem('systemPrompt', systemPromptInput.value);
+  });
+}
 
-saveApiKeyBtn.addEventListener('click', () => {
-  const apiKey = modalApiKeyInput.value.trim();
-  if (apiKey) {
-    localStorage.setItem('groqApiKey', apiKey);
-    closeApiModal();
-  } else {
-    alert('API Key cannot be empty');
-  }
-});
+if (saveApiKeyBtn) {
+  saveApiKeyBtn.addEventListener('click', () => {
+    const apiKey = modalApiKeyInput.value.trim();
+    if (apiKey) {
+      localStorage.setItem('groqApiKey', apiKey);
+      closeApiModal();
+    } else {
+      alert('API Key cannot be empty');
+    }
+  });
+}
 
-closeModalBtn.addEventListener('click', closeApiModal);
-changeApiKeyBtn.addEventListener('click', openApiModal);
+if (closeModalBtn) {
+  closeModalBtn.addEventListener('click', closeApiModal);
+}
+
+if (changeApiKeyBtn) {
+  changeApiKeyBtn.addEventListener('click', openApiModal);
+}
 
 // ------------------- LOADING SCREEN -------------------
+function showLoadingScreen() {
+  if (loadingScreen) {
+    loadingScreen.classList.remove('hidden');
+  }
+}
+
 function hideLoadingScreen() {
-  loadingScreen.style.display = 'none';
+  if (loadingScreen) {
+    loadingScreen.classList.add('hidden');
+  }
 }
 
 // ------------------- HAMBURGER MENU -------------------
 function toggleMenu(show) {
+  if (!hamburgerMenu) return;
   const shouldShow = show !== undefined ? show : hamburgerMenu.style.display !== 'block';
   hamburgerMenu.style.display = shouldShow ? 'block' : 'none';
 }
 
-hamburgerBtn.addEventListener('click', () => toggleMenu(true));
-closeBtn.addEventListener('click', () => toggleMenu(false));
+if (hamburgerBtn) {
+  hamburgerBtn.addEventListener('click', () => toggleMenu(true));
+}
+
+if (closeBtn) {
+  closeBtn.addEventListener('click', () => toggleMenu(false));
+}
 
 window.addEventListener('click', function(event) {
   if (
+    hamburgerMenu &&
+    hamburgerBtn &&
     hamburgerMenu.style.display === 'block' &&
     !hamburgerMenu.contains(event.target) &&
     event.target !== hamburgerBtn
@@ -127,6 +165,7 @@ window.addEventListener('click', function(event) {
 
 // ------------------- MODEL SELECTION STORAGE -------------------
 function loadSelectedModel() {
+  if (!modelSelect) return;
   const savedModel = localStorage.getItem('selectedModel');
   if (savedModel && modelDetails[savedModel]) {
     modelSelect.value = savedModel;
@@ -151,6 +190,10 @@ function applyTheme(theme) {
 }
 
 function loadSelectedTheme() {
+  if (!themeSelect) {
+    applyTheme('terminal');
+    return;
+  }
   const savedTheme = localStorage.getItem('selectedTheme');
   if (savedTheme) {
     themeSelect.value = savedTheme;
@@ -161,39 +204,158 @@ function loadSelectedTheme() {
   }
 }
 
-themeSelect.addEventListener('change', () => {
-  const selectedTheme = themeSelect.value;
-  applyTheme(selectedTheme);
-  localStorage.setItem('selectedTheme', selectedTheme);
-});
+if (themeSelect) {
+  themeSelect.addEventListener('change', () => {
+    const selectedTheme = themeSelect.value;
+    applyTheme(selectedTheme);
+    localStorage.setItem('selectedTheme', selectedTheme);
+  });
+}
 
-modelSelect.addEventListener('change', () => {
-  const selectedModel = modelSelect.value;
-  localStorage.setItem('selectedModel', selectedModel);
-});
+if (modelSelect) {
+  modelSelect.addEventListener('change', () => {
+    const selectedModel = modelSelect.value;
+    localStorage.setItem('selectedModel', selectedModel);
+    updateModelInfo();
+  });
+}
 
-// ------------------- INITIAL LOAD -------------------
-window.addEventListener('load', () => {
-  hideLoadingScreen();
-  loadApiKey();
+function updateModelInfo() {
+  if (!modelInfo || !modelSelect) return;
+  const details = modelDetails[modelSelect.value];
+  if (!details) {
+    modelInfo.textContent = '';
+    return;
+  }
+
+  modelInfo.innerHTML = `
+    <div><strong>Developer:</strong> ${details.developer}</div>
+    <div><strong>Context:</strong> ${details.contextWindow}</div>
+    <div class="status-pill ${details.status === 'Available' ? 'available' : 'offline'}">${details.status}</div>
+  `;
+}
+
+// ------------------- CATALOG EXPERIENCE -------------------
+function initializeJustTypeApp() {
+  if (isJustTypeInitialized) return;
   loadSelectedModel();
-  loadSelectedTheme();
   loadSystemPrompt();
   handleInitialRun();
   initializeMutationObserver();
-});
+  updateWordCount();
+  updateModelInfo();
+  isJustTypeInitialized = true;
+}
+
+function openApp(appId) {
+  if (!appDetail) return;
+
+  document.body.classList.add('detail-open');
+  appDetail.classList.add('active');
+
+  appShells.forEach((shell) => {
+    const isTarget = shell.dataset.app === appId;
+    shell.classList.toggle('active', isTarget);
+  });
+
+  if (appId === 'justtype') {
+    showLoadingScreen();
+    setTimeout(() => {
+      initializeJustTypeApp();
+      loadApiKey();
+      hideLoadingScreen();
+      if (editor) {
+        placeCaretAtEnd(editor);
+      }
+    }, 650);
+  } else {
+    hideLoadingScreen();
+  }
+}
+
+function closeAppDetail() {
+  if (!appDetail) return;
+  appDetail.classList.remove('active');
+  document.body.classList.remove('detail-open');
+  toggleMenu(false);
+  hideLoadingScreen();
+}
+
+function initializeCatalog() {
+  loadSelectedTheme();
+  loadSelectedModel();
+  updateModelInfo();
+  updateWordCount();
+
+  appCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      const appId = card.dataset.app;
+      if (appId) {
+        openApp(appId);
+      }
+    });
+  });
+
+  launchTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const appId = trigger.dataset.launch;
+      if (appId) {
+        openApp(appId);
+      }
+    });
+  });
+
+  if (closeDetailBtn) {
+    closeDetailBtn.addEventListener('click', () => {
+      closeAppDetail();
+    });
+  }
+
+  if (appDetail) {
+    appDetail.addEventListener('click', (event) => {
+      if (event.target === appDetail) {
+        closeAppDetail();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && appDetail && appDetail.classList.contains('active')) {
+      closeAppDetail();
+    }
+  });
+}
+
+initializeCatalog();
 
 function handleInitialRun() {
   const hasRunBefore = localStorage.getItem('hasRunBefore');
   if (!hasRunBefore) {
     isInitialRun = true;
     localStorage.setItem('hasRunBefore', 'true');
-    alert('Generating...');
-    insertGeneratedSentence('this is how it generates the rest of your sentence.', true);
-    setTimeout(() => {
-      displayInstructionMessage();
+    const startSequence = () => {
+      insertGeneratedSentence('this is how it generates the rest of your sentence.', true);
+      setTimeout(() => {
+        displayInstructionMessage();
+        scrollToBottom();
+      }, 2000);
+    };
+
+    if (editor) {
+      const bootMessage = document.createElement('div');
+      bootMessage.className = 'boot-message';
+      bootMessage.textContent = 'booting neural muse...';
+      editor.appendChild(bootMessage);
       scrollToBottom();
-    }, 2000);
+
+      setTimeout(() => {
+        bootMessage.remove();
+        startSequence();
+      }, 900);
+    } else {
+      startSequence();
+    }
   }
 }
 
@@ -251,10 +413,11 @@ function scrollToBottom() {
 }
 
 function initializeMutationObserver() {
-  const observer = new MutationObserver(() => {
+  if (!editor || mutationObserver) return;
+  mutationObserver = new MutationObserver(() => {
     scrollToBottom();
   });
-  observer.observe(editor, { childList: true, subtree: true, characterData: true });
+  mutationObserver.observe(editor, { childList: true, subtree: true, characterData: true });
 }
 
 function updateWordCount() {
@@ -265,52 +428,54 @@ function updateWordCount() {
   }
 }
 
-editor.addEventListener('input', () => {
-  if (!userIsTyping) return;
-  clearTimeout(typingTimer);
-  updateWordCount();
-  const text = editor.innerText.trim();
-  const words = text ? text.split(/\s+/) : [];
-  if (words.length >= 3 && !isGenerating) {
-    typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
-  }
-  const generatedSpan = editor.querySelector('.generated');
-  if (generatedSpan) {
-    generatedSpan.remove();
-  }
-});
-
-editor.addEventListener('keydown', (e) => {
-  userIsTyping = true;
-  if (e.key === 'Enter') {
-    e.preventDefault();
+if (editor) {
+  editor.addEventListener('input', () => {
+    if (!userIsTyping) return;
+    clearTimeout(typingTimer);
+    updateWordCount();
+    const text = editor.innerText.trim();
+    const words = text ? text.split(/\s+/) : [];
+    if (words.length >= 3 && !isGenerating) {
+      typingTimer = setTimeout(generateNextSentence, doneTypingInterval);
+    }
     const generatedSpan = editor.querySelector('.generated');
     if (generatedSpan) {
-      generatedSpan.classList.remove('generated');
-      generatedSpan.classList.add('accepted');
-      placeCaretAtEnd(editor);
+      generatedSpan.remove();
     }
-    if (document.getElementById('instructionMessage')) {
-      removeInstructionMessage();
-      scrollToBottom();
-    }
-  } else if (e.key === 'Backspace' || e.key === 'Delete') {
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
+  });
+
+  editor.addEventListener('keydown', (e) => {
+    userIsTyping = true;
+    if (e.key === 'Enter') {
+      e.preventDefault();
       const generatedSpan = editor.querySelector('.generated');
-      if (generatedSpan && range.intersectsNode(generatedSpan)) {
-        clearTimeout(typingTimer);
+      if (generatedSpan) {
+        generatedSpan.classList.remove('generated');
+        generatedSpan.classList.add('accepted');
+        placeCaretAtEnd(editor);
+      }
+      if (document.getElementById('instructionMessage')) {
+        removeInstructionMessage();
+        scrollToBottom();
+      }
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const generatedSpan = editor.querySelector('.generated');
+        if (generatedSpan && range.intersectsNode(generatedSpan)) {
+          clearTimeout(typingTimer);
+        }
       }
     }
-  }
-});
+  });
 
-editor.addEventListener('keyup', (e) => {
-  if (e.key !== 'Backspace' && e.key !== 'Delete') {
-    userIsTyping = false;
-  }
-});
+  editor.addEventListener('keyup', (e) => {
+    if (e.key !== 'Backspace' && e.key !== 'Delete') {
+      userIsTyping = false;
+    }
+  });
+}
 
 async function generateNextSentence() {
   const apiKey = localStorage.getItem('groqApiKey');

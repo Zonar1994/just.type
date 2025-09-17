@@ -2,90 +2,179 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Just Type</title>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  <!-- Reference your unchanged CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>just.catalog</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="theme-terminal">
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loader">
-      <div class="spinner"></div>
-      <h2>Loading Just Type...</h2>
+<body class="catalog-body theme-terminal">
+  <div class="scanlines"></div>
+  <header class="hero">
+    <div class="hero-content">
+      <p class="tagline">Synthwave Software Lab</p>
+      <h1>just.catalog</h1>
+      <p class="hero-subtitle">Plug into experimental creative apps with an analog soul and digital superpowers.</p>
+      <div class="hero-actions">
+        <button class="hero-button primary" data-launch="justtype">Launch just.type</button>
+        <button class="hero-button ghost">Request an app</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="catalog-section">
+      <h2 class="section-heading">Featured Builds</h2>
+      <div class="app-grid">
+        <article class="app-card" data-app="justtype">
+          <div class="card-header">
+            <span class="app-id">01</span>
+            <span class="status live">live</span>
+          </div>
+          <h3>just.<span>type</span></h3>
+          <p>Retro-inspired auto-completion canvas that riffs with you in real-time using Groq's lightning-fast LLMs.</p>
+          <div class="card-footer">
+            <button class="card-cta" data-launch="justtype">Enter app</button>
+            <span class="chip">writing</span>
+            <span class="chip">groq</span>
+          </div>
+        </article>
+
+        <article class="app-card" data-app="mixtape">
+          <div class="card-header">
+            <span class="app-id">02</span>
+            <span class="status soon">soon</span>
+          </div>
+          <h3>just.<span>mixtape</span></h3>
+          <p>Create vaporwave playlists, neon cover art, and cosmic liner notes. The deck is spinning up...</p>
+          <div class="card-footer">
+            <span class="chip flicker">audio</span>
+            <span class="chip">visuals</span>
+          </div>
+        </article>
+
+        <article class="app-card" data-app="sketch">
+          <div class="card-header">
+            <span class="app-id">03</span>
+            <span class="status soon">soon</span>
+          </div>
+          <h3>just.<span>sketch</span></h3>
+          <p>AI-assisted doodle pad for pixel art storyboards. Loading new color palettes from the ether.</p>
+          <div class="card-footer">
+            <span class="chip">art</span>
+            <span class="chip flicker">pixels</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Broadcasting from the future — handcrafted in CSS &amp; JavaScript.</p>
+  </footer>
+
+  <div id="appDetail" class="app-detail">
+    <div class="detail-frame">
+      <button class="close-detail" aria-label="Close app">&times;</button>
+      <div class="detail-content">
+        <div class="app-shell active" data-app="justtype">
+          <div id="loadingScreen" class="loading-screen hidden">
+            <div class="loader">
+              <div class="spinner"></div>
+              <p>Dialing into just.type...</p>
+            </div>
+          </div>
+
+          <div class="experience-header">
+            <h2>just.<span>type</span></h2>
+            <p>Groq-powered stream-of-consciousness writing companion</p>
+          </div>
+
+          <div class="editor-stack">
+            <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
+            <div id="wordCount" class="word-count-display">Word Count: 0</div>
+          </div>
+
+          <button id="hamburgerBtn" class="hamburger-btn" aria-label="Open settings">&#9776;</button>
+
+          <div id="hamburgerMenu" class="hamburger-menu">
+            <span class="close-btn" aria-label="Close settings">&times;</span>
+            <div class="menu-content">
+              <div class="menu-heading">just.type control room</div>
+
+              <div class="model-selector">
+                <label for="modelSelect">Select Model</label>
+                <select id="modelSelect">
+                  <option value="gemma2-9b-it">Gemma2 9B (IT)</option>
+                  <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+                  <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                  <option value="llama-guard-3-8b">Llama Guard 3 8B</option>
+                  <option value="llama3-70b-8192">Llama3 70B 8192</option>
+                  <option value="llama3-8b-8192">Llama3 8B 8192</option>
+                  <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
+                </select>
+                <div id="modelInfo" class="model-info"></div>
+              </div>
+
+              <div class="theme-selector">
+                <label for="themeSelect">Select Theme</label>
+                <select id="themeSelect">
+                  <option value="terminal">Terminal Green</option>
+                  <option value="solarized-light">Solarized Light</option>
+                  <option value="solarized-dark">Solarized Dark</option>
+                  <option value="midnight">Midnight Blue</option>
+                  <option value="lavender">Lavender</option>
+                  <option value="forest">Forest</option>
+                  <option value="neon">Neon Pink</option>
+                  <option value="cyberpunk">Cyberpunk</option>
+                </select>
+              </div>
+
+              <div class="prompt-config">
+                <label for="systemPrompt">System Prompt</label>
+                <textarea id="systemPrompt" rows="4" placeholder="Enter system prompt"></textarea>
+              </div>
+
+              <button id="changeApiKeyBtn" class="menu-button">Update API Key</button>
+            </div>
+          </div>
+
+          <div id="apiModal" class="modal">
+            <div class="modal-content">
+              <span class="close-modal" aria-label="Close API modal">&times;</span>
+              <h2>Enter your Groq API Key</h2>
+              <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
+              <button id="saveApiKeyBtn">Save API Key</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-shell" data-app="mixtape">
+          <div class="placeholder">
+            <h2>just.<span>mixtape</span></h2>
+            <p>Analog vibes incoming. This module is warming the tubes.</p>
+            <div class="placeholder-marquee">
+              <span>coming soon</span>
+              <span>coming soon</span>
+              <span>coming soon</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-shell" data-app="sketch">
+          <div class="placeholder">
+            <h2>just.<span>sketch</span></h2>
+            <p>Prototype your worlds in pixels and pastel gradients. ETA: next transmission.</p>
+            <div class="placeholder-marquee glitch">
+              <span>loading palettes</span>
+              <span>loading palettes</span>
+              <span>loading palettes</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Modal for API Key -->
-  <div id="apiModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h2>Enter your Groq API Key</h2>
-      <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
-      <button id="saveApiKeyBtn">Save API Key</button>
-    </div>
-  </div>
-
-  <!-- Container for Editor and Animation -->
-  <div class="container">
-    <h1>just.<b>type</b></h1>
-    <div id="editor" contenteditable="true" placeholder="Start typing..."></div>
-    <div id="wordCount">Word Count: 0</div>
-  </div>
-
-  <!-- Hamburger Menu Button -->
-  <button id="hamburgerBtn" class="hamburger-btn">&#9776;</button>
-
-  <!-- Hamburger Menu Content -->
-  <div id="hamburgerMenu" class="hamburger-menu">
-    <span class="close-btn">&times;</span>
-    <div class="menu-content">
-
-      <!-- Model Selection -->
-      <div class="model-selector">
-        <label for="modelSelect">Select Model:</label>
-        <select id="modelSelect">
-          <!-- Updated to show ONLY the seven models from your snippet -->
-          <option value="gemma2-9b-it">Gemma2 9B (IT)</option>
-          <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
-          <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
-          <option value="llama-guard-3-8b">Llama Guard 3 8B</option>
-          <option value="llama3-70b-8192">Llama3 70B 8192</option>
-          <option value="llama3-8b-8192">Llama3 8B 8192</option>
-          <option value="mixtral-8x7b-32768">Mixtral 8x7B 32768</option>
-        </select>
-      </div>
-      <div id="modelInfo" class="model-info"></div>
-
-      <!-- Theme Selection -->
-      <div class="theme-selector">
-        <label for="themeSelect">Select Theme:</label>
-        <select id="themeSelect">
-          <option value="terminal">Terminal Green</option>
-          <option value="solarized-light">Solarized Light</option>
-          <option value="solarized-dark">Solarized Dark</option>
-          <option value="midnight">Midnight Blue</option>
-          <option value="lavender">Lavender</option>
-          <option value="forest">Forest</option>
-          <option value="neon">Neon Pink</option>
-          <option value="cyberpunk">Cyberpunk</option>
-        </select>
-      </div>
-
-      <!-- System Prompt -->
-      <div class="prompt-config">
-        <label for="systemPrompt">System Prompt:</label>
-        <textarea id="systemPrompt" rows="4" placeholder="Enter system prompt"></textarea>
-      </div>
-
-      <!-- API Key Button within Hamburger Menu -->
-      <button id="changeApiKeyBtn" class="menu-button">API KEY</button>
-
-    </div>
-  </div>
-
-  <!-- Reference your updated script.js -->
   <script src="script.js"></script>
 </body>
 </html>
