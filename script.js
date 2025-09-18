@@ -270,6 +270,9 @@ function initializeVisualsApp() {
   `;
 
   const fragmentShader = `
+    precision mediump float;
+    precision mediump int;
+
     uniform float u_time;
     uniform float u_resolution_x;
     uniform float u_resolution_y;
