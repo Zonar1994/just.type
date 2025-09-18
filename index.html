@@ -9,72 +9,90 @@
 </head>
 <body class="catalog-body theme-terminal">
   <div class="scanlines"></div>
-  <header class="hero">
-    <div class="hero-content">
-      <p class="tagline">Synthwave Software Lab</p>
-      <h1>just.catalog</h1>
-      <p class="hero-subtitle">Plug into experimental creative apps with an analog soul and digital superpowers.</p>
-      <div class="hero-actions">
-        <button class="hero-button primary" data-launch="justtype">Launch just.type</button>
-        <button class="hero-button ghost">Request an app</button>
+  <div id="homeView" class="home-view">
+    <header class="hero">
+      <div class="hero-content">
+        <p class="tagline">Synthwave Software Lab</p>
+        <h1>just.catalog</h1>
+        <p class="hero-subtitle">Plug into experimental creative apps with an analog soul and digital superpowers.</p>
+        <div class="hero-actions">
+          <button class="hero-button primary" data-launch="justtype">Launch just.type</button>
+          <button class="hero-button ghost">Request an app</button>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="content">
-    <section class="catalog-section">
-      <h2 class="section-heading">Featured Builds</h2>
-      <div class="app-grid">
-        <article class="app-card" data-app="justtype">
-          <div class="card-header">
-            <span class="app-id">01</span>
-            <span class="status live">live</span>
-          </div>
-          <h3>just.<span>type</span></h3>
-          <p>Retro-inspired auto-completion canvas that riffs with you in real-time using Groq's lightning-fast LLMs.</p>
-          <div class="card-footer">
-            <button class="card-cta" data-launch="justtype">Enter app</button>
-            <span class="chip">writing</span>
-            <span class="chip">groq</span>
-          </div>
-        </article>
+    <main class="content">
+      <section class="catalog-section">
+        <h2 class="section-heading">Featured Builds</h2>
+        <div class="app-grid">
+          <article class="app-card" data-app="justtype">
+            <div class="card-header">
+              <span class="app-id">01</span>
+              <span class="status live">live</span>
+            </div>
+            <h3>just.<span>type</span></h3>
+            <p>Retro-inspired auto-completion canvas that riffs with you in real-time using Groq's lightning-fast LLMs.</p>
+            <div class="card-footer">
+              <button class="card-cta" data-launch="justtype">Enter app</button>
+              <span class="chip">writing</span>
+              <span class="chip">groq</span>
+            </div>
+          </article>
 
-        <article class="app-card" data-app="mixtape">
-          <div class="card-header">
-            <span class="app-id">02</span>
-            <span class="status soon">soon</span>
-          </div>
-          <h3>just.<span>mixtape</span></h3>
-          <p>Create vaporwave playlists, neon cover art, and cosmic liner notes. The deck is spinning up...</p>
-          <div class="card-footer">
-            <span class="chip flicker">audio</span>
-            <span class="chip">visuals</span>
-          </div>
-        </article>
+          <article class="app-card" data-app="visuals">
+            <div class="card-header">
+              <span class="app-id">02</span>
+              <span class="status live">live</span>
+            </div>
+            <h3>just.<span>visuals</span></h3>
+            <p>Flowy shader-driven visual generator with tweakable controls for hypnotic light shows.</p>
+            <div class="card-footer">
+              <button class="card-cta" data-launch="visuals">Enter app</button>
+              <span class="chip">visuals</span>
+              <span class="chip">three.js</span>
+            </div>
+          </article>
 
-        <article class="app-card" data-app="sketch">
-          <div class="card-header">
-            <span class="app-id">03</span>
-            <span class="status soon">soon</span>
-          </div>
-          <h3>just.<span>sketch</span></h3>
-          <p>AI-assisted doodle pad for pixel art storyboards. Loading new color palettes from the ether.</p>
-          <div class="card-footer">
-            <span class="chip">art</span>
-            <span class="chip flicker">pixels</span>
-          </div>
-        </article>
-      </div>
-    </section>
-  </main>
+          <article class="app-card" data-app="mixtape">
+            <div class="card-header">
+              <span class="app-id">03</span>
+              <span class="status soon">soon</span>
+            </div>
+            <h3>just.<span>mixtape</span></h3>
+            <p>Create vaporwave playlists, neon cover art, and cosmic liner notes. The deck is spinning up...</p>
+            <div class="card-footer">
+              <span class="chip flicker">audio</span>
+              <span class="chip">visuals</span>
+            </div>
+          </article>
 
-  <footer class="footer">
-    <p>Broadcasting from the future — handcrafted in CSS &amp; JavaScript.</p>
-  </footer>
+          <article class="app-card" data-app="sketch">
+            <div class="card-header">
+              <span class="app-id">04</span>
+              <span class="status soon">soon</span>
+            </div>
+            <h3>just.<span>sketch</span></h3>
+            <p>AI-assisted doodle pad for pixel art storyboards. Loading new color palettes from the ether.</p>
+            <div class="card-footer">
+              <span class="chip">art</span>
+              <span class="chip flicker">pixels</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Broadcasting from the future — handcrafted in CSS &amp; JavaScript.</p>
+    </footer>
+  </div>
 
   <div id="appDetail" class="app-detail">
+    <div class="app-detail-header">
+      <button id="backToCatalog" class="back-button" type="button" aria-label="Back to catalog">&#8592; Back</button>
+    </div>
     <div class="detail-frame">
-      <button class="close-detail" aria-label="Close app">&times;</button>
       <div class="detail-content">
         <div class="app-shell active" data-app="justtype">
           <div id="loadingScreen" class="loading-screen hidden">
@@ -171,10 +189,64 @@
             </div>
           </div>
         </div>
+
+        <div class="app-shell" data-app="visuals">
+          <div class="visuals-experience">
+            <div id="visualsControls" class="visuals-controls rounded-xl">
+              <h2 class="visuals-title">Visuals Controls</h2>
+              <div class="control-group">
+                <label for="speed">Animation Speed</label>
+                <input type="range" id="speed" min="0.1" max="2.0" step="0.05" value="1.0">
+              </div>
+              <div class="control-group">
+                <label for="frequency">Flow Frequency</label>
+                <input type="range" id="frequency" min="0.5" max="10.0" step="0.1" value="2.0">
+              </div>
+              <div class="control-group">
+                <label for="amplitude">Color Amplitude</label>
+                <input type="range" id="amplitude" min="0.1" max="5.0" step="0.05" value="1.0">
+              </div>
+              <div class="control-group">
+                <label for="colorShift">Overall Color Shift</label>
+                <input type="range" id="colorShift" min="0.0" max="1.0" step="0.01" value="0.0">
+              </div>
+              <div class="control-group">
+                <label for="redColor">Red Base Color</label>
+                <input type="range" id="redColor" min="0.0" max="1.0" step="0.01" value="0.5">
+              </div>
+              <div class="control-group">
+                <label for="greenColor">Green Base Color</label>
+                <input type="range" id="greenColor" min="0.0" max="1.0" step="0.01" value="0.5">
+              </div>
+              <div class="control-group">
+                <label for="blueColor">Blue Base Color</label>
+                <input type="range" id="blueColor" min="0.0" max="1.0" step="0.01" value="0.5">
+              </div>
+              <div class="control-group">
+                <label for="grainAmount">Grain Amount</label>
+                <input type="range" id="grainAmount" min="0.0" max="0.3" step="0.005" value="0.05">
+              </div>
+              <div class="control-group">
+                <label for="clumpDensity">Clump Density</label>
+                <input type="range" id="clumpDensity" min="0.5" max="5.0" step="0.05" value="1.5">
+              </div>
+              <div class="control-group">
+                <label for="clumpSpeed">Clump Speed</label>
+                <input type="range" id="clumpSpeed" min="0.0" max="1.0" step="0.01" value="0.3">
+              </div>
+              <div class="control-group">
+                <label for="clumpThreshold">Clump Threshold</label>
+                <input type="range" id="clumpThreshold" min="0.0" max="1.0" step="0.01" value="0.5">
+              </div>
+            </div>
+            <canvas id="visualsCanvas"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>

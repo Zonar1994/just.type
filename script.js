@@ -15,7 +15,7 @@ const closeModalBtn = document.querySelector('.close-modal');
 const wordCountDisplay = document.getElementById('wordCount');
 const systemPromptInput = document.getElementById('systemPrompt');
 const appDetail = document.getElementById('appDetail');
-const closeDetailBtn = document.querySelector('.close-detail');
+const backButton = document.getElementById('backToCatalog');
 const appShells = document.querySelectorAll('.app-shell');
 const appCards = document.querySelectorAll('.app-card');
 const launchTriggers = document.querySelectorAll('[data-launch]');
@@ -28,6 +28,7 @@ let lastGeneratedContent = '';
 let isInitialRun = false; // Flag to track initial run
 let isJustTypeInitialized = false;
 let mutationObserver;
+let isVisualsInitialized = false;
 
 // ------------------- MODEL DETAILS (UPDATED) -------------------
 const modelDetails = {
@@ -247,10 +248,191 @@ function initializeJustTypeApp() {
   isJustTypeInitialized = true;
 }
 
+function initializeVisualsApp() {
+  if (isVisualsInitialized) return;
+
+  const visualsCanvas = document.getElementById('visualsCanvas');
+  const controlsDiv = document.getElementById('visualsControls');
+  const THREERef = window.THREE;
+
+  if (!visualsCanvas || !controlsDiv || !THREERef) {
+    console.warn('Visuals app assets are not available yet.');
+    return;
+  }
+
+  const startTime = performance.now();
+  const container = controlsDiv.parentElement;
+
+  const vertexShader = `
+    void main() {
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const fragmentShader = `
+    uniform float u_time;
+    uniform float u_resolution_x;
+    uniform float u_resolution_y;
+    uniform float u_speed;
+    uniform float u_frequency;
+    uniform float u_amplitude;
+    uniform float u_color_shift;
+    uniform float u_red_base;
+    uniform float u_green_base;
+    uniform float u_blue_base;
+    uniform float u_grain_amount;
+    uniform float u_clump_density;
+    uniform float u_clump_speed;
+    uniform float u_clump_threshold;
+
+    vec2 hash(vec2 p) {
+      p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(
+        mix(dot(hash(i + vec2(0.0, 0.0)), f - vec2(0.0, 0.0)),
+            dot(hash(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),
+        mix(dot(hash(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)),
+            dot(hash(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x),
+        u.y
+      );
+    }
+
+    float rand(vec2 co) {
+      return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+      uv = uv * 2.0 - 1.0;
+
+      float n_flow = noise(uv * u_frequency + u_time * u_speed);
+      vec3 flow_color = vec3(
+        sin(n_flow * u_amplitude + u_color_shift * 6.28 + u_red_base * 6.28) * 0.5 + 0.5,
+        sin(n_flow * u_amplitude + u_color_shift * 6.28 + u_green_base * 6.28) * 0.5 + 0.5,
+        sin(n_flow * u_amplitude + u_color_shift * 6.28 + u_blue_base * 6.28) * 0.5 + 0.5
+      );
+
+      float clump_noise_val = noise(uv * u_clump_density + u_time * u_clump_speed);
+      float clump_mask = smoothstep(u_clump_threshold - 0.1, u_clump_threshold + 0.1, clump_noise_val);
+
+      vec3 final_color = mix(vec3(0.0), flow_color, clump_mask);
+      float grain = (rand(gl_FragCoord.xy) * 2.0 - 1.0) * u_grain_amount;
+      final_color += grain;
+
+      gl_FragColor = vec4(final_color, 1.0);
+    }
+  `;
+
+  const controls = {
+    speed: document.getElementById('speed'),
+    frequency: document.getElementById('frequency'),
+    amplitude: document.getElementById('amplitude'),
+    colorShift: document.getElementById('colorShift'),
+    redColor: document.getElementById('redColor'),
+    greenColor: document.getElementById('greenColor'),
+    blueColor: document.getElementById('blueColor'),
+    grainAmount: document.getElementById('grainAmount'),
+    clumpDensity: document.getElementById('clumpDensity'),
+    clumpSpeed: document.getElementById('clumpSpeed'),
+    clumpThreshold: document.getElementById('clumpThreshold'),
+  };
+
+  const uniforms = {
+    u_time: { value: 0.0 },
+    u_resolution_x: { value: container.clientWidth || window.innerWidth },
+    u_resolution_y: { value: container.clientHeight || window.innerHeight },
+    u_speed: { value: parseFloat(controls.speed?.value || '1.0') },
+    u_frequency: { value: parseFloat(controls.frequency?.value || '2.0') },
+    u_amplitude: { value: parseFloat(controls.amplitude?.value || '1.0') },
+    u_color_shift: { value: parseFloat(controls.colorShift?.value || '0.0') },
+    u_red_base: { value: parseFloat(controls.redColor?.value || '0.5') },
+    u_green_base: { value: parseFloat(controls.greenColor?.value || '0.5') },
+    u_blue_base: { value: parseFloat(controls.blueColor?.value || '0.5') },
+    u_grain_amount: { value: parseFloat(controls.grainAmount?.value || '0.05') },
+    u_clump_density: { value: parseFloat(controls.clumpDensity?.value || '1.5') },
+    u_clump_speed: { value: parseFloat(controls.clumpSpeed?.value || '0.3') },
+    u_clump_threshold: { value: parseFloat(controls.clumpThreshold?.value || '0.5') },
+  };
+
+  const scene = new THREERef.Scene();
+  const camera = new THREERef.PerspectiveCamera(
+    75,
+    (container.clientWidth || window.innerWidth) / (container.clientHeight || window.innerHeight),
+    0.1,
+    1000
+  );
+  camera.position.z = 1;
+
+  const renderer = new THREERef.WebGLRenderer({ canvas: visualsCanvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+
+  const geometry = new THREERef.PlaneGeometry(2, 2);
+  const material = new THREERef.ShaderMaterial({
+    uniforms,
+    vertexShader,
+    fragmentShader,
+  });
+  const mesh = new THREERef.Mesh(geometry, material);
+  scene.add(mesh);
+
+  const updateRendererSize = () => {
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
+    renderer.setSize(width, height, false);
+    uniforms.u_resolution_x.value = width;
+    uniforms.u_resolution_y.value = height;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  };
+
+  updateRendererSize();
+
+  window.addEventListener('resize', updateRendererSize);
+
+  Object.entries({
+    speed: 'u_speed',
+    frequency: 'u_frequency',
+    amplitude: 'u_amplitude',
+    colorShift: 'u_color_shift',
+    redColor: 'u_red_base',
+    greenColor: 'u_green_base',
+    blueColor: 'u_blue_base',
+    grainAmount: 'u_grain_amount',
+    clumpDensity: 'u_clump_density',
+    clumpSpeed: 'u_clump_speed',
+    clumpThreshold: 'u_clump_threshold',
+  }).forEach(([controlKey, uniformKey]) => {
+    const controlEl = controls[controlKey];
+    if (!controlEl) return;
+    controlEl.addEventListener('input', () => {
+      uniforms[uniformKey].value = parseFloat(controlEl.value);
+    });
+  });
+
+  visualsCanvas.addEventListener('click', () => {
+    controlsDiv.classList.toggle('hidden-controls');
+  });
+
+  const animate = () => {
+    uniforms.u_time.value = (performance.now() - startTime) * 0.001;
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  };
+
+  animate();
+  isVisualsInitialized = true;
+}
+
 function openApp(appId) {
   if (!appDetail) return;
 
-  document.body.classList.add('detail-open');
+  document.body.classList.add('app-open');
   appDetail.classList.add('active');
 
   appShells.forEach((shell) => {
@@ -268,6 +450,12 @@ function openApp(appId) {
         placeCaretAtEnd(editor);
       }
     }, 650);
+  } else if (appId === 'visuals') {
+    const controlsDiv = document.getElementById('visualsControls');
+    if (controlsDiv) {
+      controlsDiv.classList.remove('hidden-controls');
+    }
+    initializeVisualsApp();
   } else {
     hideLoadingScreen();
   }
@@ -276,7 +464,7 @@ function openApp(appId) {
 function closeAppDetail() {
   if (!appDetail) return;
   appDetail.classList.remove('active');
-  document.body.classList.remove('detail-open');
+  document.body.classList.remove('app-open');
   toggleMenu(false);
   hideLoadingScreen();
 }
@@ -306,17 +494,9 @@ function initializeCatalog() {
     });
   });
 
-  if (closeDetailBtn) {
-    closeDetailBtn.addEventListener('click', () => {
+  if (backButton) {
+    backButton.addEventListener('click', () => {
       closeAppDetail();
-    });
-  }
-
-  if (appDetail) {
-    appDetail.addEventListener('click', (event) => {
-      if (event.target === appDetail) {
-        closeAppDetail();
-      }
     });
   }
 
