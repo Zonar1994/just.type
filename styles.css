@@ -384,54 +384,30 @@ body.app-open .home-view {
 
 .visuals-experience {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
-  align-items: stretch;
-  gap: 28px;
+  --visuals-pad: clamp(18px, 3vw, 36px);
   width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 32px;
+  padding: var(--visuals-pad);
   background: linear-gradient(135deg, rgba(26, 10, 55, 0.85), rgba(4, 12, 42, 0.85));
   border-radius: 28px;
   border: 1px solid rgba(99, 102, 241, 0.35);
   box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55);
 }
 
-.visuals-experience.fullscreen-active,
-.visuals-experience:fullscreen {
-  display: block;
-  padding: 0;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-  background: #000;
-}
-
-.visuals-experience.fullscreen-active .visuals-stage,
-.visuals-experience:fullscreen .visuals-stage {
-  aspect-ratio: auto;
-  min-height: 100%;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.visuals-experience.fullscreen-active .visuals-stage::after,
-.visuals-experience:fullscreen .visuals-stage::after {
-  display: none;
-}
-
 .visuals-stage {
   position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 360px;
   background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.25), transparent 65%),
     radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 55%),
     #020312;
   border-radius: 24px;
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  aspect-ratio: 16 / 9;
-  min-height: 320px;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
@@ -445,21 +421,35 @@ body.app-open .home-view {
 }
 
 .visuals-stage canvas {
+  position: relative;
   display: block;
-  width: 100%;
-  height: 100%;
   cursor: pointer;
+  max-width: 100%;
+  max-height: 100%;
 }
 
-#visualsCanvas:fullscreen,
-.visuals-stage:fullscreen canvas {
+.visuals-stage.fullscreen-active {
+  border-radius: 0;
+  box-shadow: none;
+  background: #000;
+}
+
+.visuals-stage.fullscreen-active::after {
+  display: none;
+}
+
+.visuals-stage.fullscreen-active canvas {
   border-radius: 0;
 }
 
 .visuals-controls {
-  position: relative;
+  position: absolute;
+  top: var(--visuals-pad);
+  left: var(--visuals-pad);
+  width: min(360px, calc(100% - var(--visuals-pad) * 2));
+  max-height: calc(100% - var(--visuals-pad) * 2);
   padding: 24px;
-  background: rgba(8, 10, 28, 0.8);
+  background: rgba(8, 10, 28, 0.82);
   border: 1px solid rgba(129, 140, 248, 0.45);
   border-radius: 20px;
   display: flex;
@@ -467,23 +457,26 @@ body.app-open .home-view {
   gap: 18px;
   box-shadow: 0 30px 60px rgba(15, 18, 54, 0.45);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   overflow-y: auto;
-  max-height: 100%;
+  z-index: 2;
 }
 
-.visuals-experience.fullscreen-active .visuals-controls,
-.visuals-experience:fullscreen .visuals-controls {
-  position: absolute;
+.visuals-controls.hidden-controls {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-12px);
+}
+
+.visuals-stage.fullscreen-active .visuals-controls {
   top: 24px;
   left: 50%;
-  transform: translate(-50%, 0);
+  transform: translateX(-50%);
   width: min(420px, calc(100% - 48px));
-  z-index: 5;
+  max-height: calc(100% - 48px);
 }
 
-.visuals-experience.fullscreen-active .visuals-controls.hidden-controls,
-.visuals-experience:fullscreen .visuals-controls.hidden-controls {
+.visuals-stage.fullscreen-active .visuals-controls.hidden-controls {
   transform: translate(-50%, -12px);
 }
 
@@ -492,6 +485,61 @@ body.app-open .home-view {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.preset-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.preset-save-row,
+.preset-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.preset-save-row input,
+.preset-actions select {
+  flex: 1 1 auto;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  background: rgba(15, 18, 54, 0.6);
+  color: #e0e7ff;
+  font-family: 'VT323', 'Courier New', Courier, monospace;
+  font-size: 16px;
+}
+
+.preset-actions select {
+  min-width: 0;
+}
+
+.preset-save-row input:focus,
+.preset-actions select:focus {
+  outline: none;
+  border-color: rgba(129, 140, 248, 0.8);
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.35);
+}
+
+.preset-actions .menu-button,
+.preset-save-row .menu-button {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 10px 16px;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.menu-button.ghost {
+  background: rgba(17, 24, 39, 0.45);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.menu-button.ghost:hover {
+  box-shadow: 0 14px 24px rgba(99, 102, 241, 0.35);
 }
 
 .fullscreen-toggle {
@@ -1050,18 +1098,12 @@ body.theme-cyberpunk {
   }
 
   .visuals-experience {
-    grid-template-columns: 1fr;
-    padding: 28px;
+    padding: clamp(16px, 4vw, 28px);
   }
 
   .visuals-controls {
-    order: 2;
-    width: 100%;
-    max-height: none;
-  }
-
-  .visuals-stage {
-    order: 1;
+    width: calc(100% - var(--visuals-pad) * 2);
+    max-height: calc(100% - var(--visuals-pad) * 2);
   }
 }
 
@@ -1089,8 +1131,7 @@ body.theme-cyberpunk {
   }
 
   .visuals-experience {
-    padding: 24px;
-    gap: 20px;
+    padding: clamp(16px, 5vw, 24px);
   }
 
   .visuals-controls-header {
@@ -1101,6 +1142,16 @@ body.theme-cyberpunk {
   .fullscreen-toggle {
     width: 100%;
     text-align: center;
+  }
+
+  .visuals-controls {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - var(--visuals-pad) * 2);
+  }
+
+  .visuals-controls.hidden-controls {
+    transform: translate(-50%, -12px);
   }
 }
 
@@ -1132,6 +1183,6 @@ body.theme-cyberpunk {
 
   .visuals-stage {
     border-radius: 18px;
-    min-height: 260px;
+    min-height: 240px;
   }
 }
