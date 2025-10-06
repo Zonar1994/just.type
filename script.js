@@ -262,6 +262,47 @@ function initializeVisualsApp() {
 
   const startTime = performance.now();
   const container = controlsDiv.parentElement;
+  const fullscreenToggle = document.getElementById('fullscreenToggle');
+
+  if (!container) {
+    console.warn('Visuals container element is missing.');
+    return;
+  }
+
+  const targetAspectRatio = 16 / 9;
+
+  const isFullscreenActive = () => {
+    const fullscreenElement = document.fullscreenElement;
+    return fullscreenElement === container || fullscreenElement === visualsCanvas;
+  };
+
+  const getAvailableSize = () => {
+    if (isFullscreenActive()) {
+      return { width: window.innerWidth, height: window.innerHeight };
+    }
+
+    const rect = container.getBoundingClientRect();
+    const width = rect.width || container.clientWidth || window.innerWidth;
+    const height = rect.height || container.clientHeight || window.innerHeight;
+
+    return { width, height };
+  };
+
+  const computeDisplaySize = () => {
+    const { width: availableWidth, height: availableHeight } = getAvailableSize();
+
+    let width = availableWidth;
+    let height = width / targetAspectRatio;
+
+    if (height > availableHeight) {
+      height = availableHeight;
+      width = height * targetAspectRatio;
+    }
+
+    return { width, height };
+  };
+
+  const initialSize = computeDisplaySize();
 
   const vertexShader = `
     void main() {
@@ -349,8 +390,8 @@ function initializeVisualsApp() {
 
   const uniforms = {
     u_time: { value: 0.0 },
-    u_resolution_x: { value: container.clientWidth || window.innerWidth },
-    u_resolution_y: { value: container.clientHeight || window.innerHeight },
+    u_resolution_x: { value: initialSize.width },
+    u_resolution_y: { value: initialSize.height },
     u_speed: { value: parseFloat(controls.speed?.value || '1.0') },
     u_frequency: { value: parseFloat(controls.frequency?.value || '2.0') },
     u_amplitude: { value: parseFloat(controls.amplitude?.value || '1.0') },
@@ -367,7 +408,7 @@ function initializeVisualsApp() {
   const scene = new THREERef.Scene();
   const camera = new THREERef.PerspectiveCamera(
     75,
-    (container.clientWidth || window.innerWidth) / (container.clientHeight || window.innerHeight),
+    initialSize.width / initialSize.height,
     0.1,
     1000
   );
@@ -386,16 +427,44 @@ function initializeVisualsApp() {
   scene.add(mesh);
 
   const updateRendererSize = () => {
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
-    renderer.setSize(width, height, false);
+    const { width, height } = computeDisplaySize();
+    renderer.setSize(width, height, true);
     uniforms.u_resolution_x.value = width;
     uniforms.u_resolution_y.value = height;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   };
 
-  updateRendererSize();
+  const syncFullscreenToggle = (isActive) => {
+    if (!fullscreenToggle) return;
+    fullscreenToggle.textContent = isActive ? 'Exit Fullscreen' : 'Enter Fullscreen';
+    fullscreenToggle.setAttribute('aria-pressed', String(isActive));
+  };
+
+  const handleFullscreenChange = () => {
+    const fullscreenActive = isFullscreenActive();
+    container.classList.toggle('fullscreen-active', fullscreenActive);
+    syncFullscreenToggle(fullscreenActive);
+    updateRendererSize();
+  };
+
+  if (fullscreenToggle) {
+    fullscreenToggle.addEventListener('click', () => {
+      if (isFullscreenActive()) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      } else {
+        const targetElement = container.requestFullscreen ? container : visualsCanvas;
+        targetElement?.requestFullscreen?.();
+      }
+    });
+  }
+
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('fullscreenerror', handleFullscreenChange);
+
+  handleFullscreenChange();
 
   window.addEventListener('resize', updateRendererSize);
 
