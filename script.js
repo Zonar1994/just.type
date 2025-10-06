@@ -261,10 +261,11 @@ function initializeVisualsApp() {
   }
 
   const startTime = performance.now();
-  const container = controlsDiv.parentElement;
+  const layoutContainer = controlsDiv.parentElement;
+  const canvasWrapper = visualsCanvas.closest('.visuals-stage') || visualsCanvas.parentElement;
   const fullscreenToggle = document.getElementById('fullscreenToggle');
 
-  if (!container) {
+  if (!layoutContainer || !canvasWrapper) {
     console.warn('Visuals container element is missing.');
     return;
   }
@@ -273,7 +274,11 @@ function initializeVisualsApp() {
 
   const isFullscreenActive = () => {
     const fullscreenElement = document.fullscreenElement;
-    return fullscreenElement === container || fullscreenElement === visualsCanvas;
+    return (
+      fullscreenElement === layoutContainer ||
+      fullscreenElement === canvasWrapper ||
+      fullscreenElement === visualsCanvas
+    );
   };
 
   const getAvailableSize = () => {
@@ -281,9 +286,11 @@ function initializeVisualsApp() {
       return { width: window.innerWidth, height: window.innerHeight };
     }
 
-    const rect = container.getBoundingClientRect();
-    const width = rect.width || container.clientWidth || window.innerWidth;
-    const height = rect.height || container.clientHeight || window.innerHeight;
+    const rect = canvasWrapper.getBoundingClientRect();
+    const width =
+      rect.width || canvasWrapper.clientWidth || layoutContainer.clientWidth || window.innerWidth;
+    const height =
+      rect.height || canvasWrapper.clientHeight || width / targetAspectRatio;
 
     return { width, height };
   };
@@ -292,11 +299,16 @@ function initializeVisualsApp() {
     const { width: availableWidth, height: availableHeight } = getAvailableSize();
 
     let width = availableWidth;
-    let height = width / targetAspectRatio;
+    let height = availableHeight;
 
-    if (height > availableHeight) {
-      height = availableHeight;
-      width = height * targetAspectRatio;
+    if (!isFullscreenActive()) {
+      const idealHeight = width / targetAspectRatio;
+      if (idealHeight <= availableHeight) {
+        height = idealHeight;
+      } else {
+        height = availableHeight;
+        width = height * targetAspectRatio;
+      }
     }
 
     return { width, height };
@@ -442,7 +454,7 @@ function initializeVisualsApp() {
 
   const handleFullscreenChange = () => {
     const fullscreenActive = isFullscreenActive();
-    container.classList.toggle('fullscreen-active', fullscreenActive);
+    layoutContainer.classList.toggle('fullscreen-active', fullscreenActive);
     syncFullscreenToggle(fullscreenActive);
     updateRendererSize();
   };
@@ -454,7 +466,7 @@ function initializeVisualsApp() {
           document.exitFullscreen();
         }
       } else {
-        const targetElement = container.requestFullscreen ? container : visualsCanvas;
+        const targetElement = layoutContainer.requestFullscreen ? layoutContainer : visualsCanvas;
         targetElement?.requestFullscreen?.();
       }
     });

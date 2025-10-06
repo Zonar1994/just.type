@@ -381,54 +381,110 @@ body.app-open .home-view {
   border-radius: 18px;
 }
 
+
 .visuals-experience {
   position: relative;
-  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 28px;
   width: 100%;
   margin: 0 auto;
-  aspect-ratio: 16 / 9;
-  min-height: 320px;
-  background: #000;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(26, 10, 55, 0.85), rgba(4, 12, 42, 0.85));
+  border-radius: 28px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55);
 }
 
 .visuals-experience.fullscreen-active,
 .visuals-experience:fullscreen {
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: #000;
+}
+
+.visuals-experience.fullscreen-active .visuals-stage,
+.visuals-experience:fullscreen .visuals-stage {
   aspect-ratio: auto;
-  width: 100%;
-  height: 100%;
+  min-height: 100%;
   border-radius: 0;
   box-shadow: none;
 }
 
-.visuals-experience canvas,
-#visualsCanvas:fullscreen {
+.visuals-experience.fullscreen-active .visuals-stage::after,
+.visuals-experience:fullscreen .visuals-stage::after {
+  display: none;
+}
+
+.visuals-stage {
+  position: relative;
+  background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.25), transparent 65%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 55%),
+    #020312;
+  border-radius: 24px;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  min-height: 320px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.visuals-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 60%);
+  mix-blend-mode: screen;
+}
+
+.visuals-stage canvas {
   display: block;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
-  max-width: 100%;
-  max-height: 100%;
+}
+
+#visualsCanvas:fullscreen,
+.visuals-stage:fullscreen canvas {
+  border-radius: 0;
 }
 
 .visuals-controls {
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(420px, calc(100% - 40px));
+  position: relative;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(99, 102, 241, 0.4);
+  background: rgba(8, 10, 28, 0.8);
+  border: 1px solid rgba(129, 140, 248, 0.45);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
-  transition: opacity 0.3s ease;
+  gap: 18px;
+  box-shadow: 0 30px 60px rgba(15, 18, 54, 0.45);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.visuals-experience.fullscreen-active .visuals-controls,
+.visuals-experience:fullscreen .visuals-controls {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: min(420px, calc(100% - 48px));
+  z-index: 5;
+}
+
+.visuals-experience.fullscreen-active .visuals-controls.hidden-controls,
+.visuals-experience:fullscreen .visuals-controls.hidden-controls {
+  transform: translate(-50%, -12px);
 }
 
 .visuals-controls-header {
@@ -469,6 +525,7 @@ body.app-open .home-view {
 .visuals-controls.hidden-controls {
   opacity: 0;
   pointer-events: none;
+  transform: translateY(-12px);
 }
 
 .visuals-title {
@@ -992,8 +1049,19 @@ body.theme-cyberpunk {
     min-height: 320px;
   }
 
+  .visuals-experience {
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+
   .visuals-controls {
-    top: 16px;
+    order: 2;
+    width: 100%;
+    max-height: none;
+  }
+
+  .visuals-stage {
+    order: 1;
   }
 }
 
@@ -1020,11 +1088,9 @@ body.theme-cyberpunk {
     right: 20px;
   }
 
-  .visuals-controls {
-    position: relative;
-    left: auto;
-    transform: none;
-    width: 100%;
+  .visuals-experience {
+    padding: 24px;
+    gap: 20px;
   }
 
   .visuals-controls-header {
@@ -1061,5 +1127,11 @@ body.theme-cyberpunk {
 
   .visuals-experience {
     border-radius: 18px;
+    padding: 20px;
+  }
+
+  .visuals-stage {
+    border-radius: 18px;
+    min-height: 260px;
   }
 }
