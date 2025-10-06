@@ -261,7 +261,12 @@ function initializeVisualsApp() {
   }
 
   const startTime = performance.now();
-  const container = controlsDiv.parentElement;
+  const canvasContainer = visualsCanvas.parentElement;
+
+  if (!canvasContainer) {
+    console.warn('Visuals canvas container is not available.');
+    return;
+  }
 
   const vertexShader = `
     void main() {
@@ -349,8 +354,8 @@ function initializeVisualsApp() {
 
   const uniforms = {
     u_time: { value: 0.0 },
-    u_resolution_x: { value: container.clientWidth || window.innerWidth },
-    u_resolution_y: { value: container.clientHeight || window.innerHeight },
+    u_resolution_x: { value: canvasContainer.clientWidth || window.innerWidth },
+    u_resolution_y: { value: canvasContainer.clientHeight || window.innerHeight },
     u_speed: { value: parseFloat(controls.speed?.value || '1.0') },
     u_frequency: { value: parseFloat(controls.frequency?.value || '2.0') },
     u_amplitude: { value: parseFloat(controls.amplitude?.value || '1.0') },
@@ -367,7 +372,8 @@ function initializeVisualsApp() {
   const scene = new THREERef.Scene();
   const camera = new THREERef.PerspectiveCamera(
     75,
-    (container.clientWidth || window.innerWidth) / (container.clientHeight || window.innerHeight),
+    (canvasContainer.clientWidth || window.innerWidth) /
+      (canvasContainer.clientHeight || window.innerHeight),
     0.1,
     1000
   );
@@ -386,8 +392,8 @@ function initializeVisualsApp() {
   scene.add(mesh);
 
   const updateRendererSize = () => {
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
+    const width = canvasContainer.clientWidth || window.innerWidth;
+    const height = canvasContainer.clientHeight || window.innerHeight;
     renderer.setSize(width, height, false);
     uniforms.u_resolution_x.value = width;
     uniforms.u_resolution_y.value = height;

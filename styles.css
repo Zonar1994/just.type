@@ -386,8 +386,23 @@ body.app-open .home-view {
   flex: 1;
   background: #000;
   border-radius: 24px;
-  overflow: hidden;
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  padding: 28px;
+  display: flex;
+}
+
+.visuals-layout {
+  display: flex;
+  gap: 28px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.visuals-canvas-container {
+  position: relative;
+  flex: 1;
+  border-radius: 18px;
+  overflow: hidden;
 }
 
 .visuals-experience canvas {
@@ -399,11 +414,7 @@ body.app-open .home-view {
 }
 
 .visuals-controls {
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(420px, calc(100% - 40px));
+  position: relative;
   padding: 24px;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(99, 102, 241, 0.4);
@@ -413,11 +424,12 @@ body.app-open .home-view {
   gap: 16px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
   transition: opacity 0.3s ease;
+  flex: 0 0 320px;
+  max-width: min(360px, 100%);
 }
 
 .visuals-controls.hidden-controls {
-  opacity: 0;
-  pointer-events: none;
+  display: none;
 }
 
 .visuals-title {
@@ -941,8 +953,24 @@ body.theme-cyberpunk {
     min-height: 320px;
   }
 
+  .visuals-experience {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .visuals-layout {
+    flex-direction: column;
+  }
+
   .visuals-controls {
-    top: 16px;
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .visuals-canvas-container {
+    min-height: 480px;
   }
 }
 
@@ -970,10 +998,11 @@ body.theme-cyberpunk {
   }
 
   .visuals-controls {
-    position: relative;
-    left: auto;
-    transform: none;
-    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .visuals-canvas-container {
+    min-height: 420px;
   }
 }
 
