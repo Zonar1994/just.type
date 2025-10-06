@@ -30,6 +30,9 @@ let isJustTypeInitialized = false;
 let mutationObserver;
 let isVisualsInitialized = false;
 
+const VISUALS_PRESETS_STORAGE_KEY = 'visualsPresets';
+const VISUALS_LAST_PRESET_KEY = 'visualsLastPreset';
+
 // ------------------- MODEL DETAILS (UPDATED) -------------------
 const modelDetails = {
   'gemma2-9b-it': {
@@ -261,11 +264,11 @@ function initializeVisualsApp() {
   }
 
   const startTime = performance.now();
-  const layoutContainer = controlsDiv.parentElement;
-  const canvasWrapper = visualsCanvas.closest('.visuals-stage') || visualsCanvas.parentElement;
+  const stageElement = visualsCanvas.closest('.visuals-stage');
+  const experienceContainer = visualsCanvas.closest('.visuals-experience');
   const fullscreenToggle = document.getElementById('fullscreenToggle');
 
-  if (!layoutContainer || !canvasWrapper) {
+  if (!stageElement) {
     console.warn('Visuals container element is missing.');
     return;
   }
@@ -274,11 +277,7 @@ function initializeVisualsApp() {
 
   const isFullscreenActive = () => {
     const fullscreenElement = document.fullscreenElement;
-    return (
-      fullscreenElement === layoutContainer ||
-      fullscreenElement === canvasWrapper ||
-      fullscreenElement === visualsCanvas
-    );
+    return fullscreenElement === stageElement || fullscreenElement === visualsCanvas;
   };
 
   const getAvailableSize = () => {
@@ -286,11 +285,17 @@ function initializeVisualsApp() {
       return { width: window.innerWidth, height: window.innerHeight };
     }
 
-    const rect = canvasWrapper.getBoundingClientRect();
-    const width =
-      rect.width || canvasWrapper.clientWidth || layoutContainer.clientWidth || window.innerWidth;
-    const height =
-      rect.height || canvasWrapper.clientHeight || width / targetAspectRatio;
+    const rect = stageElement.getBoundingClientRect();
+    let width = rect.width || stageElement.clientWidth;
+    let height = rect.height || stageElement.clientHeight;
+
+    if (!width) {
+      width = experienceContainer?.clientWidth || window.innerWidth;
+    }
+
+    if (!height) {
+      height = width / targetAspectRatio;
+    }
 
     return { width, height };
   };
@@ -298,17 +303,15 @@ function initializeVisualsApp() {
   const computeDisplaySize = () => {
     const { width: availableWidth, height: availableHeight } = getAvailableSize();
 
-    let width = availableWidth;
-    let height = availableHeight;
+    let width = availableWidth || 1;
+    let height = availableHeight || width / targetAspectRatio;
 
-    if (!isFullscreenActive()) {
-      const idealHeight = width / targetAspectRatio;
-      if (idealHeight <= availableHeight) {
-        height = idealHeight;
-      } else {
-        height = availableHeight;
-        width = height * targetAspectRatio;
-      }
+    const currentAspect = width / height;
+
+    if (currentAspect > targetAspectRatio) {
+      width = height * targetAspectRatio;
+    } else {
+      height = width / targetAspectRatio;
     }
 
     return { width, height };
@@ -399,6 +402,26 @@ function initializeVisualsApp() {
     clumpThreshold: document.getElementById('clumpThreshold'),
   };
 
+  const presetNameInput = document.getElementById('presetNameInput');
+  const savePresetBtn = document.getElementById('savePresetBtn');
+  const presetSelect = document.getElementById('presetSelect');
+  const applyPresetBtn = document.getElementById('applyPresetBtn');
+  const deletePresetBtn = document.getElementById('deletePresetBtn');
+
+  const controlUniformMap = {
+    speed: 'u_speed',
+    frequency: 'u_frequency',
+    amplitude: 'u_amplitude',
+    colorShift: 'u_color_shift',
+    redColor: 'u_red_base',
+    greenColor: 'u_green_base',
+    blueColor: 'u_blue_base',
+    grainAmount: 'u_grain_amount',
+    clumpDensity: 'u_clump_density',
+    clumpSpeed: 'u_clump_speed',
+    clumpThreshold: 'u_clump_threshold',
+  };
+
   const uniforms = {
     u_time: { value: 0.0 },
     u_resolution_x: { value: initialSize.width },
@@ -446,6 +469,77 @@ function initializeVisualsApp() {
     camera.updateProjectionMatrix();
   };
 
+  const updateUniformFromControl = (controlKey) => {
+    const controlEl = controls[controlKey];
+    const uniformKey = controlUniformMap[controlKey];
+    if (!controlEl || !uniformKey || !uniforms[uniformKey]) return;
+    uniforms[uniformKey].value = parseFloat(controlEl.value);
+  };
+
+  const readPresets = () => {
+    try {
+      const stored = localStorage.getItem(VISUALS_PRESETS_STORAGE_KEY);
+      if (!stored) return {};
+      const parsed = JSON.parse(stored);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch (error) {
+      console.error('Failed to parse visuals presets', error);
+      return {};
+    }
+  };
+
+  const writePresets = (presets) => {
+    localStorage.setItem(VISUALS_PRESETS_STORAGE_KEY, JSON.stringify(presets));
+  };
+
+  const captureCurrentSettings = () => {
+    return Object.fromEntries(
+      Object.keys(controlUniformMap).map((key) => {
+        const controlEl = controls[key];
+        return [key, controlEl ? parseFloat(controlEl.value) : 0];
+      })
+    );
+  };
+
+  const applyPresetValues = (presetValues) => {
+    if (!presetValues) return;
+    Object.entries(presetValues).forEach(([key, value]) => {
+      const controlEl = controls[key];
+      if (!controlEl) return;
+      const numericValue = typeof value === 'number' ? value : parseFloat(value);
+      if (!Number.isFinite(numericValue)) return;
+      controlEl.value = String(numericValue);
+      updateUniformFromControl(key);
+    });
+  };
+
+  const refreshPresetOptions = (selectedName) => {
+    if (!presetSelect) return;
+    const presets = readPresets();
+    const presetNames = Object.keys(presets).sort((a, b) => a.localeCompare(b));
+
+    presetSelect.innerHTML = '';
+
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.disabled = true;
+    placeholderOption.textContent = presetNames.length ? 'Select a preset' : 'No presets saved';
+    if (!selectedName || !presets[selectedName]) {
+      placeholderOption.selected = true;
+    }
+    presetSelect.appendChild(placeholderOption);
+
+    presetNames.forEach((name) => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      if (name === selectedName) {
+        option.selected = true;
+      }
+      presetSelect.appendChild(option);
+    });
+  };
+
   const syncFullscreenToggle = (isActive) => {
     if (!fullscreenToggle) return;
     fullscreenToggle.textContent = isActive ? 'Exit Fullscreen' : 'Enter Fullscreen';
@@ -454,7 +548,8 @@ function initializeVisualsApp() {
 
   const handleFullscreenChange = () => {
     const fullscreenActive = isFullscreenActive();
-    layoutContainer.classList.toggle('fullscreen-active', fullscreenActive);
+    stageElement.classList.toggle('fullscreen-active', fullscreenActive);
+    experienceContainer?.classList.toggle('fullscreen-active', fullscreenActive);
     syncFullscreenToggle(fullscreenActive);
     updateRendererSize();
   };
@@ -466,7 +561,7 @@ function initializeVisualsApp() {
           document.exitFullscreen();
         }
       } else {
-        const targetElement = layoutContainer.requestFullscreen ? layoutContainer : visualsCanvas;
+        const targetElement = stageElement.requestFullscreen ? stageElement : visualsCanvas;
         targetElement?.requestFullscreen?.();
       }
     });
@@ -479,28 +574,100 @@ function initializeVisualsApp() {
 
   window.addEventListener('resize', updateRendererSize);
 
-  Object.entries({
-    speed: 'u_speed',
-    frequency: 'u_frequency',
-    amplitude: 'u_amplitude',
-    colorShift: 'u_color_shift',
-    redColor: 'u_red_base',
-    greenColor: 'u_green_base',
-    blueColor: 'u_blue_base',
-    grainAmount: 'u_grain_amount',
-    clumpDensity: 'u_clump_density',
-    clumpSpeed: 'u_clump_speed',
-    clumpThreshold: 'u_clump_threshold',
-  }).forEach(([controlKey, uniformKey]) => {
+  Object.keys(controlUniformMap).forEach((controlKey) => {
     const controlEl = controls[controlKey];
     if (!controlEl) return;
     controlEl.addEventListener('input', () => {
-      uniforms[uniformKey].value = parseFloat(controlEl.value);
+      updateUniformFromControl(controlKey);
     });
   });
 
+  const initializePresetUI = () => {
+    if (!presetSelect) return;
+    const presets = readPresets();
+    const lastPreset = localStorage.getItem(VISUALS_LAST_PRESET_KEY);
+    refreshPresetOptions(lastPreset || '');
+
+    if (lastPreset && presets[lastPreset]) {
+      applyPresetValues(presets[lastPreset]);
+      if (presetNameInput) {
+        presetNameInput.value = lastPreset;
+      }
+    }
+  };
+
+  if (savePresetBtn) {
+    savePresetBtn.addEventListener('click', () => {
+      const presetName = presetNameInput?.value.trim();
+      if (!presetName) {
+        presetNameInput?.focus();
+        return;
+      }
+      const presets = readPresets();
+      presets[presetName] = captureCurrentSettings();
+      writePresets(presets);
+      refreshPresetOptions(presetName);
+      localStorage.setItem(VISUALS_LAST_PRESET_KEY, presetName);
+    });
+  }
+
+  if (applyPresetBtn) {
+    applyPresetBtn.addEventListener('click', () => {
+      if (!presetSelect) return;
+      const selectedName = presetSelect.value;
+      const presets = readPresets();
+      if (!selectedName || !presets[selectedName]) return;
+      applyPresetValues(presets[selectedName]);
+      if (presetNameInput) {
+        presetNameInput.value = selectedName;
+      }
+      localStorage.setItem(VISUALS_LAST_PRESET_KEY, selectedName);
+    });
+  }
+
+  if (presetSelect) {
+    presetSelect.addEventListener('change', () => {
+      const selectedName = presetSelect.value;
+      const presets = readPresets();
+      if (!selectedName || !presets[selectedName]) return;
+      applyPresetValues(presets[selectedName]);
+      if (presetNameInput) {
+        presetNameInput.value = selectedName;
+      }
+      localStorage.setItem(VISUALS_LAST_PRESET_KEY, selectedName);
+    });
+  }
+
+  if (deletePresetBtn) {
+    deletePresetBtn.addEventListener('click', () => {
+      if (!presetSelect) return;
+      const selectedName = presetSelect.value;
+      if (!selectedName) return;
+      const presets = readPresets();
+      if (!presets[selectedName]) return;
+      delete presets[selectedName];
+      writePresets(presets);
+      const lastPreset = localStorage.getItem(VISUALS_LAST_PRESET_KEY);
+      if (lastPreset === selectedName) {
+        localStorage.removeItem(VISUALS_LAST_PRESET_KEY);
+      }
+      refreshPresetOptions('');
+      if (presetNameInput) {
+        presetNameInput.value = '';
+      }
+    });
+  }
+
+  initializePresetUI();
+
   visualsCanvas.addEventListener('click', () => {
     controlsDiv.classList.toggle('hidden-controls');
+  });
+
+  stageElement.addEventListener('click', (event) => {
+    if (event.target === stageElement && controlsDiv.classList.contains('hidden-controls')) {
+      controlsDiv.classList.remove('hidden-controls');
+    }
   });
 
   const animate = () => {
