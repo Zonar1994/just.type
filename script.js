@@ -363,8 +363,7 @@ function initializeVisualsApp() {
       );
 
       float clump_noise_val = noise(uv * u_clump_density + u_time * u_clump_speed);
-      float clump_value = clump_noise_val * 0.5 + 0.5;
-      float clump_mask = smoothstep(u_clump_threshold - 0.1, u_clump_threshold + 0.1, clump_value);
+      float clump_mask = smoothstep(u_clump_threshold - 0.1, u_clump_threshold + 0.1, clump_noise_val);
 
       vec3 final_color = mix(vec3(0.0), flow_color, clump_mask);
       float grain = (rand(gl_FragCoord.xy) * 2.0 - 1.0) * u_grain_amount;
