@@ -54,9 +54,23 @@
             </div>
           </article>
 
-          <article class="app-card" data-app="mixtape">
+          <article class="app-card snake-card" data-app="snake">
             <div class="card-header">
               <span class="app-id">03</span>
+              <span class="status live">live</span>
+            </div>
+            <h3>just.<span>snake</span></h3>
+            <p>Neon serpents, synth beats, and multiplayer mischief on a retro arcade grid.</p>
+            <div class="card-footer">
+              <button class="card-cta" data-launch="snake">Enter app</button>
+              <span class="chip">arcade</span>
+              <span class="chip">multiplayer</span>
+            </div>
+          </article>
+
+          <article class="app-card" data-app="mixtape">
+            <div class="card-header">
+              <span class="app-id">04</span>
               <span class="status soon">soon</span>
             </div>
             <h3>just.<span>mixtape</span></h3>
@@ -69,7 +83,7 @@
 
           <article class="app-card" data-app="sketch">
             <div class="card-header">
-              <span class="app-id">04</span>
+              <span class="app-id">05</span>
               <span class="status soon">soon</span>
             </div>
             <h3>just.<span>sketch</span></h3>
@@ -163,6 +177,62 @@
               <input type="password" id="modalApiKey" placeholder="Enter your API Key" />
               <button id="saveApiKeyBtn">Save API Key</button>
             </div>
+          </div>
+        </div>
+
+        <div class="app-shell" data-app="snake">
+          <div class="snake-lab">
+            <div class="snake-stage">
+              <div class="snake-canvas-frame" aria-live="polite">
+                <canvas id="snakeCanvas" width="640" height="480" aria-label="Retro snake playfield"></canvas>
+                <div class="snake-hud">
+                  <div class="hud-chip" id="snakeScore">Score <span id="snakeScoreValue">0</span></div>
+                  <div class="hud-chip" id="snakePlayers">Snakes <span id="snakePlayersValue">1</span></div>
+                  <div class="hud-chip" id="snakeSpeedIndicator">Speed: Cruise</div>
+                  <div class="hud-chip" id="snakeDifficultyIndicator">Boundaries: Wrap</div>
+                  <div class="hud-chip" id="snakeAiIndicator">AI Allies: <span id="snakeAiValue">0</span></div>
+                </div>
+              </div>
+              <div class="snake-status-feed" id="snakeStatusFeed" aria-live="polite">Dial in the controls and unleash the neon serpents.</div>
+            </div>
+            <aside class="snake-control-panel" aria-label="Snake control deck">
+              <h3>Control Deck</h3>
+              <div class="control-row">
+                <button class="snake-button" data-snake-control="add">Add Snake</button>
+                <button class="snake-button ghost" data-snake-control="remove">Remove Snake</button>
+              </div>
+              <div class="control-row toggles">
+                <label class="snake-toggle">
+                  <input type="checkbox" id="snakeTurboToggle" />
+                  <span class="toggle-label">Turbo Speed</span>
+                </label>
+                <label class="snake-toggle">
+                  <input type="checkbox" id="snakeHardToggle" />
+                  <span class="toggle-label">Hard Mode</span>
+                </label>
+              </div>
+              <div class="control-row selects">
+                <label for="snakeFoodSelect">Special Food</label>
+                <select id="snakeFoodSelect">
+                  <option value="random">Neon Mix</option>
+                  <option value="speed">Hyper Boost</option>
+                  <option value="chroma">Chroma Shift</option>
+                  <option value="clone">Clone Party</option>
+                </select>
+              </div>
+              <div class="control-row selects">
+                <label for="snakeObstacleSelect">Obstacles</label>
+                <select id="snakeObstacleSelect">
+                  <option value="none">Open Run</option>
+                  <option value="corner">Corner Posts</option>
+                  <option value="grid">Gridlock</option>
+                  <option value="pulse">Pulse Gates</option>
+                </select>
+              </div>
+              <div class="control-row legend">
+                <p>Player 1: Arrow Keys &amp; Space to pause boost. Player 2 (AI by default) can be taken over with WASD.</p>
+              </div>
+            </aside>
           </div>
         </div>
 
@@ -269,6 +339,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
-  <script src="script.js" defer></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

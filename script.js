@@ -29,6 +29,9 @@ let isInitialRun = false; // Flag to track initial run
 let isJustTypeInitialized = false;
 let mutationObserver;
 let isVisualsInitialized = false;
+let activeAppId = null;
+let snakeModulePromise = null;
+let snakeAppController = null;
 
 const VISUALS_PRESETS_STORAGE_KEY = 'visualsPresets';
 const VISUALS_LAST_PRESET_KEY = 'visualsLastPreset';
@@ -680,8 +683,32 @@ function initializeVisualsApp() {
   isVisualsInitialized = true;
 }
 
+function ensureSnakeModule() {
+  if (!snakeModulePromise) {
+    snakeModulePromise = import('./snake.js');
+  }
+  return snakeModulePromise;
+}
+
+function teardownSnakeApp() {
+  if (snakeAppController && typeof snakeAppController.teardown === 'function') {
+    try {
+      snakeAppController.teardown();
+    } catch (error) {
+      console.error('Error while tearing down the snake experience:', error);
+    }
+  }
+  snakeAppController = null;
+}
+
 function openApp(appId) {
   if (!appDetail) return;
+
+  if (activeAppId === 'snake' && appId !== 'snake') {
+    teardownSnakeApp();
+  }
+
+  activeAppId = appId;
 
   document.body.classList.add('app-open');
   appDetail.classList.add('active');
@@ -707,6 +734,35 @@ function openApp(appId) {
       controlsDiv.classList.remove('hidden-controls');
     }
     initializeVisualsApp();
+    hideLoadingScreen();
+  } else if (appId === 'snake') {
+    showLoadingScreen();
+    ensureSnakeModule()
+      .then((module) => {
+        if (activeAppId !== 'snake') {
+          return;
+        }
+        const snakeShell = document.querySelector('.app-shell[data-app="snake"]');
+        if (!snakeShell || typeof module.initializeSnakeApp !== 'function') {
+          throw new Error('Snake module failed to initialize');
+        }
+        teardownSnakeApp();
+        snakeAppController = module.initializeSnakeApp({ root: snakeShell });
+        if (snakeAppController && typeof snakeAppController.start === 'function') {
+          snakeAppController.start();
+        }
+      })
+      .catch((error) => {
+        console.error('Unable to launch the snake experience:', error);
+        setTimeout(() => {
+          alert('Snake lab failed to boot. Check the console for details.');
+        }, 0);
+      })
+      .finally(() => {
+        if (activeAppId === 'snake') {
+          hideLoadingScreen();
+        }
+      });
   } else {
     hideLoadingScreen();
   }
@@ -714,6 +770,10 @@ function openApp(appId) {
 
 function closeAppDetail() {
   if (!appDetail) return;
+  if (activeAppId === 'snake') {
+    teardownSnakeApp();
+  }
+  activeAppId = null;
   appDetail.classList.remove('active');
   document.body.classList.remove('app-open');
   toggleMenu(false);

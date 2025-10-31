@@ -250,6 +250,292 @@ body.app-open .home-view {
   flex-wrap: wrap;
 }
 
+.snake-card {
+  background:
+    radial-gradient(circle at top left, rgba(255, 0, 136, 0.28), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 255, 255, 0.25), transparent 60%),
+    rgba(10, 5, 40, 0.85);
+  border: 1px solid rgba(94, 226, 255, 0.45);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.snake-card::before {
+  background:
+    conic-gradient(from 120deg, rgba(255, 0, 136, 0.45), rgba(0, 255, 255, 0.45), rgba(255, 0, 136, 0.45));
+  opacity: 0.18;
+}
+
+.snake-card:hover::before {
+  opacity: 0.45;
+}
+
+.snake-card .chip {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: rgba(0, 255, 255, 0.45);
+  color: #8cfff5;
+}
+
+.app-shell[data-app="snake"] {
+  width: 100%;
+}
+
+.snake-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 32px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.snake-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.snake-canvas-frame {
+  position: relative;
+  padding: clamp(16px, 2vw, 28px);
+  border-radius: 26px;
+  background:
+    linear-gradient(140deg, rgba(8, 0, 40, 0.9), rgba(8, 0, 20, 0.85)),
+    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none"%3E%3Cpath d="M0 30H120" stroke="rgba(0,255,255,0.05)" stroke-width="4"/%3E%3Cpath d="M30 0V120" stroke="rgba(255,0,204,0.06)" stroke-width="4"/%3E%3C/svg%3E');
+  background-size: cover, 120px 120px;
+  border: 1px solid rgba(94, 226, 255, 0.35);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.55), 0 0 35px rgba(0, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+#snakeCanvas {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(4, 1, 15, 0.85);
+  image-rendering: pixelated;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.45);
+}
+
+.snake-hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 32px);
+}
+
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.45);
+  color: #bffeff;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
+}
+
+.hud-chip span {
+  color: #ffffff;
+}
+
+.snake-status-feed {
+  min-height: 48px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 0, 204, 0.25);
+  background: rgba(26, 0, 36, 0.6);
+  box-shadow: inset 0 0 12px rgba(255, 0, 204, 0.12);
+  font-size: 18px;
+  line-height: 1.4;
+  color: rgba(255, 216, 255, 0.85);
+}
+
+.snake-control-panel {
+  border-radius: 26px;
+  border: 1px solid rgba(0, 255, 255, 0.28);
+  background: rgba(5, 10, 35, 0.88);
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.snake-control-panel h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #00ffe1;
+}
+
+.snake-control-panel .control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.snake-control-panel .control-row.toggles {
+  justify-content: space-between;
+}
+
+.snake-control-panel .selects {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.snake-control-panel label {
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.snake-control-panel select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 255, 255, 0.35);
+  background: rgba(7, 0, 26, 0.85);
+  color: #9bfff8;
+  font-size: 16px;
+  letter-spacing: 1px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.snake-control-panel select:focus {
+  border-color: rgba(255, 0, 204, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 0, 204, 0.2);
+}
+
+.snake-button {
+  flex: 1 1 140px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 255, 255, 0.45);
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.18), rgba(255, 0, 204, 0.2));
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.snake-button:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 12px 25px rgba(0, 255, 255, 0.18);
+}
+
+.snake-button:active {
+  transform: scale(0.98);
+}
+
+.snake-button.ghost {
+  border-color: rgba(255, 0, 204, 0.35);
+  background: linear-gradient(135deg, rgba(255, 0, 204, 0.18), rgba(0, 0, 0, 0.3));
+}
+
+.snake-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.snake-toggle input {
+  appearance: none;
+  width: 54px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  background: rgba(0, 10, 35, 0.85);
+  position: relative;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.snake-toggle input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.snake-toggle input:checked {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(255, 0, 204, 0.45));
+  border-color: rgba(255, 0, 204, 0.55);
+}
+
+.snake-toggle input:checked::before {
+  transform: translateX(24px);
+  background: #0a0f1f;
+}
+
+.toggle-label {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.snake-control-panel .legend {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(204, 235, 255, 0.75);
+}
+
+.snake-control-panel .legend p {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .snake-lab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .snake-control-panel {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .snake-hud {
+    gap: 8px;
+  }
+
+  .hud-chip {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .snake-control-panel {
+    padding: 18px;
+  }
+
+  .snake-control-panel .control-row.toggles {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .snake-button {
+    flex: 1 1 100%;
+  }
+}
+
 .card-cta {
   border: 1px solid rgba(0, 255, 204, 0.5);
   background: transparent;
