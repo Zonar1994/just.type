@@ -19,6 +19,26 @@ const backButton = document.getElementById('backToCatalog');
 const appShells = document.querySelectorAll('.app-shell');
 const appCards = document.querySelectorAll('.app-card');
 const launchTriggers = document.querySelectorAll('[data-launch]');
+const mixtapeLibrary = document.getElementById('mixtapeLibrary');
+const mixtapeSideAList = document.getElementById('mixtapeSideAList');
+const mixtapeSideBList = document.getElementById('mixtapeSideBList');
+const mixtapeSideToggle = document.getElementById('mixtapeSideToggle');
+const mixtapeStatus = document.getElementById('mixtapeStatus');
+const mixtapeDuration = document.getElementById('mixtapeDuration');
+const mixtapeProgress = document.getElementById('mixtapeProgress');
+const mixtapeRecordBtn = document.getElementById('mixtapeRecordBtn');
+const mixtapeStopBtn = document.getElementById('mixtapeStopBtn');
+const mixtapeShuffleBtn = document.getElementById('mixtapeShuffleBtn');
+const mixtapeClearBtn = document.getElementById('mixtapeClearBtn');
+const mixtapeDeck = document.querySelector('.mixtape-deck');
+const sketchCanvas = document.getElementById('sketchCanvas');
+const sketchGridSize = document.getElementById('sketchGridSize');
+const sketchBrushSize = document.getElementById('sketchBrushSize');
+const sketchColorInput = document.getElementById('sketchColorInput');
+const sketchPalette = document.getElementById('sketchPalette');
+const sketchEraserToggle = document.getElementById('sketchEraserToggle');
+const sketchClearBtn = document.getElementById('sketchClearBtn');
+const sketchFillBtn = document.getElementById('sketchFillBtn');
 
 let typingTimer;
 const doneTypingInterval = 1000; // 1 second
@@ -32,6 +52,23 @@ let isVisualsInitialized = false;
 let activeAppId = null;
 let snakeModulePromise = null;
 let snakeAppController = null;
+let isMixtapeInitialized = false;
+let isSketchInitialized = false;
+let mixtapePlaybackInterval = null;
+let mixtapePlaybackTime = 0;
+let mixtapeActiveSide = 'A';
+let mixtapeIsRecording = false;
+let mixtapeState = { A: [], B: [] };
+let sketchState = {
+  gridSize: 16,
+  brushSize: 1,
+  color: '#ff2fd3',
+  isEraser: false,
+  isDrawing: false,
+  lastCell: null,
+  cells: [],
+  canvasSize: 512,
+};
 
 const VISUALS_PRESETS_STORAGE_KEY = 'visualsPresets';
 const VISUALS_LAST_PRESET_KEY = 'visualsLastPreset';
@@ -683,6 +720,403 @@ function initializeVisualsApp() {
   isVisualsInitialized = true;
 }
 
+function formatDuration(seconds) {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, '0');
+  const remaining = String(safeSeconds % 60).padStart(2, '0');
+  return `${minutes}:${remaining}`;
+}
+
+function getMixtapeTotalDuration(side) {
+  return mixtapeState[side].reduce((total, track) => total + track.duration, 0);
+}
+
+function renderMixtapeLists() {
+  if (!mixtapeSideAList || !mixtapeSideBList) return;
+  const renderList = (side, element) => {
+    element.innerHTML = '';
+    mixtapeState[side].forEach((track) => {
+      const item = document.createElement('li');
+      item.textContent = `${track.title} · ${formatDuration(track.duration)}`;
+      element.appendChild(item);
+    });
+  };
+  renderList('A', mixtapeSideAList);
+  renderList('B', mixtapeSideBList);
+  updateMixtapeDisplay();
+}
+
+function updateMixtapeDisplay() {
+  if (!mixtapeDuration || !mixtapeStatus || !mixtapeProgress) return;
+  const totalDuration = getMixtapeTotalDuration(mixtapeActiveSide);
+  mixtapeDuration.textContent = formatDuration(totalDuration);
+
+  if (totalDuration === 0) {
+    mixtapeStatus.textContent = `Side ${mixtapeActiveSide} is empty. Add tracks from the library.`;
+    mixtapeProgress.style.width = '0%';
+    return;
+  }
+
+  const progressPercent = Math.min(mixtapePlaybackTime / totalDuration, 1) * 100;
+  mixtapeProgress.style.width = `${progressPercent}%`;
+
+  if (!mixtapeIsRecording) {
+    mixtapeStatus.textContent = `Side ${mixtapeActiveSide} queued. ${mixtapeState[mixtapeActiveSide].length} tracks ready.`;
+  }
+}
+
+function stopMixtapePlayback(reset = false) {
+  if (mixtapePlaybackInterval) {
+    clearInterval(mixtapePlaybackInterval);
+    mixtapePlaybackInterval = null;
+  }
+  mixtapeIsRecording = false;
+  if (mixtapeDeck) {
+    mixtapeDeck.classList.remove('recording');
+  }
+  if (reset) {
+    mixtapePlaybackTime = 0;
+  }
+  updateMixtapeDisplay();
+}
+
+function startMixtapePlayback() {
+  const totalDuration = getMixtapeTotalDuration(mixtapeActiveSide);
+  if (!mixtapeStatus) return;
+  if (totalDuration === 0) {
+    mixtapeStatus.textContent = `Side ${mixtapeActiveSide} is empty. Add tracks before recording.`;
+    return;
+  }
+  if (mixtapePlaybackInterval) {
+    clearInterval(mixtapePlaybackInterval);
+  }
+  mixtapeIsRecording = true;
+  if (mixtapeDeck) {
+    mixtapeDeck.classList.add('recording');
+  }
+  mixtapeStatus.textContent = `Recording Side ${mixtapeActiveSide}...`;
+  mixtapePlaybackInterval = setInterval(() => {
+    mixtapePlaybackTime += 0.5;
+    if (mixtapePlaybackTime >= totalDuration) {
+      mixtapePlaybackTime = totalDuration;
+      stopMixtapePlayback(false);
+      if (mixtapeStatus) {
+        mixtapeStatus.textContent = `Side ${mixtapeActiveSide} recorded. Ready for replay.`;
+      }
+    } else {
+      updateMixtapeDisplay();
+    }
+  }, 500);
+}
+
+function initializeMixtapeApp() {
+  if (isMixtapeInitialized) return;
+  if (!mixtapeLibrary || !mixtapeSideToggle) return;
+
+  const tracks = [
+    { title: 'Crimson Circuitry', duration: 128 },
+    { title: 'Midnight Overdrive', duration: 156 },
+    { title: 'Neon Coastline', duration: 142 },
+    { title: 'Hyperion Drift', duration: 175 },
+    { title: 'Starlight VHS', duration: 133 },
+    { title: 'Saturn Static', duration: 121 },
+    { title: 'Cobalt Dreams', duration: 148 },
+    { title: 'Pulsewave Avenue', duration: 160 },
+    { title: 'Mirror Maze', duration: 111 },
+  ];
+
+  tracks.forEach((track) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'track-item';
+    item.innerHTML = `<span>${track.title}</span><span>${formatDuration(track.duration)}</span>`;
+    item.addEventListener('click', () => {
+      mixtapeState[mixtapeActiveSide].push(track);
+      if (mixtapeStatus) {
+        mixtapeStatus.textContent = `${track.title} added to Side ${mixtapeActiveSide}.`;
+      }
+      renderMixtapeLists();
+    });
+    mixtapeLibrary.appendChild(item);
+  });
+
+  mixtapeSideToggle.addEventListener('click', () => {
+    mixtapeActiveSide = mixtapeActiveSide === 'A' ? 'B' : 'A';
+    mixtapeSideToggle.textContent = `Side ${mixtapeActiveSide}`;
+    mixtapePlaybackTime = 0;
+    stopMixtapePlayback(false);
+    updateMixtapeDisplay();
+  });
+
+  if (mixtapeRecordBtn) {
+    mixtapeRecordBtn.addEventListener('click', () => {
+      if (mixtapeIsRecording) {
+        stopMixtapePlayback(false);
+        if (mixtapeStatus) {
+          mixtapeStatus.textContent = `Paused Side ${mixtapeActiveSide}.`;
+        }
+        return;
+      }
+      startMixtapePlayback();
+    });
+  }
+
+  if (mixtapeStopBtn) {
+    mixtapeStopBtn.addEventListener('click', () => {
+      mixtapePlaybackTime = 0;
+      stopMixtapePlayback(true);
+    });
+  }
+
+  if (mixtapeShuffleBtn) {
+    mixtapeShuffleBtn.addEventListener('click', () => {
+      const sideTracks = mixtapeState[mixtapeActiveSide];
+      for (let i = sideTracks.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sideTracks[i], sideTracks[j]] = [sideTracks[j], sideTracks[i]];
+      }
+      mixtapePlaybackTime = 0;
+      renderMixtapeLists();
+      if (mixtapeStatus) {
+        mixtapeStatus.textContent = `Side ${mixtapeActiveSide} shuffled.`;
+      }
+    });
+  }
+
+  if (mixtapeClearBtn) {
+    mixtapeClearBtn.addEventListener('click', () => {
+      mixtapeState[mixtapeActiveSide] = [];
+      mixtapePlaybackTime = 0;
+      stopMixtapePlayback(true);
+      renderMixtapeLists();
+    });
+  }
+
+  renderMixtapeLists();
+  updateMixtapeDisplay();
+  isMixtapeInitialized = true;
+}
+
+function initializeSketchApp() {
+  if (isSketchInitialized) return;
+  if (!sketchCanvas) return;
+
+  const ctx = sketchCanvas.getContext('2d');
+  if (!ctx) return;
+
+  const backgroundColor = '#05000f';
+
+  const createGrid = (size) =>
+    Array.from({ length: size }, () => Array.from({ length: size }, () => null));
+
+  const renderGrid = () => {
+    const { gridSize, canvasSize } = sketchState;
+    const cellSize = canvasSize / gridSize;
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+    for (let row = 0; row < gridSize; row += 1) {
+      for (let col = 0; col < gridSize; col += 1) {
+        const color = sketchState.cells[row][col];
+        if (color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= gridSize; i += 1) {
+      const offset = i * cellSize;
+      ctx.beginPath();
+      ctx.moveTo(offset, 0);
+      ctx.lineTo(offset, canvasSize);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, offset);
+      ctx.lineTo(canvasSize, offset);
+      ctx.stroke();
+    }
+  };
+
+  const clampCell = (value, max) => Math.max(0, Math.min(max - 1, value));
+
+  const getCellFromEvent = (event) => {
+    const rect = sketchCanvas.getBoundingClientRect();
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const scaleX = sketchCanvas.width / rect.width;
+    const scaleY = sketchCanvas.height / rect.height;
+    const scaledX = x * scaleX;
+    const scaledY = y * scaleY;
+    const cellSize = sketchState.canvasSize / sketchState.gridSize;
+    const col = clampCell(Math.floor(scaledX / cellSize), sketchState.gridSize);
+    const row = clampCell(Math.floor(scaledY / cellSize), sketchState.gridSize);
+    return { row, col };
+  };
+
+  const setCellColor = (row, col, color) => {
+    const { gridSize } = sketchState;
+    const brush = sketchState.brushSize;
+    for (let y = row; y < row + brush; y += 1) {
+      for (let x = col; x < col + brush; x += 1) {
+        const safeRow = clampCell(y, gridSize);
+        const safeCol = clampCell(x, gridSize);
+        sketchState.cells[safeRow][safeCol] = color;
+      }
+    }
+  };
+
+  const drawLine = (start, end, color) => {
+    const dx = Math.abs(end.col - start.col);
+    const dy = Math.abs(end.row - start.row);
+    const sx = start.col < end.col ? 1 : -1;
+    const sy = start.row < end.row ? 1 : -1;
+    let err = dx - dy;
+    let x = start.col;
+    let y = start.row;
+    while (true) {
+      setCellColor(y, x, color);
+      if (x === end.col && y === end.row) break;
+      const err2 = 2 * err;
+      if (err2 > -dy) {
+        err -= dy;
+        x += sx;
+      }
+      if (err2 < dx) {
+        err += dx;
+        y += sy;
+      }
+    }
+  };
+
+  const paintCell = (event) => {
+    const { row, col } = getCellFromEvent(event);
+    const color = sketchState.isEraser ? backgroundColor : sketchState.color;
+    if (event.shiftKey && sketchState.lastCell) {
+      drawLine(sketchState.lastCell, { row, col }, color);
+    } else {
+      setCellColor(row, col, color);
+    }
+    sketchState.lastCell = { row, col };
+    renderGrid();
+  };
+
+  const startDrawing = (event) => {
+    event.preventDefault();
+    sketchState.isDrawing = true;
+    paintCell(event);
+  };
+
+  const stopDrawing = () => {
+    sketchState.isDrawing = false;
+    sketchState.lastCell = null;
+  };
+
+  const handleMove = (event) => {
+    if (!sketchState.isDrawing) return;
+    paintCell(event);
+  };
+
+  sketchCanvas.addEventListener('mousedown', startDrawing);
+  sketchCanvas.addEventListener('mousemove', handleMove);
+  sketchCanvas.addEventListener('mouseup', stopDrawing);
+  sketchCanvas.addEventListener('mouseleave', stopDrawing);
+  sketchCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+  sketchCanvas.addEventListener('touchmove', handleMove, { passive: false });
+  sketchCanvas.addEventListener('touchend', stopDrawing);
+
+  if (sketchGridSize) {
+    sketchGridSize.addEventListener('change', () => {
+      const newSize = Number(sketchGridSize.value);
+      sketchState.gridSize = newSize;
+      sketchState.cells = createGrid(newSize);
+      renderGrid();
+    });
+  }
+
+  const updatePaletteSelection = (color) => {
+    if (!sketchPalette) return;
+    const swatches = sketchPalette.querySelectorAll('.palette-swatch');
+    swatches.forEach((swatch) => {
+      const swatchColor = swatch.getAttribute('data-color');
+      const isActive = swatchColor?.toLowerCase() === color.toLowerCase();
+      swatch.classList.toggle('active', isActive);
+    });
+  };
+
+  if (sketchBrushSize) {
+    sketchBrushSize.addEventListener('change', () => {
+      sketchState.brushSize = Number(sketchBrushSize.value);
+    });
+  }
+
+  if (sketchColorInput) {
+    sketchColorInput.addEventListener('input', () => {
+      sketchState.color = sketchColorInput.value;
+      sketchState.isEraser = false;
+      if (sketchEraserToggle) {
+        sketchEraserToggle.checked = false;
+      }
+      updatePaletteSelection(sketchState.color);
+    });
+  }
+
+  if (sketchPalette) {
+    const swatches = sketchPalette.querySelectorAll('.palette-swatch');
+    swatches.forEach((swatch) => {
+      const color = swatch.getAttribute('data-color');
+      if (color) {
+        swatch.style.background = color;
+      }
+      swatch.addEventListener('click', () => {
+        if (!color) return;
+        sketchState.color = color;
+        if (sketchColorInput) {
+          sketchColorInput.value = color;
+        }
+        sketchState.isEraser = false;
+        if (sketchEraserToggle) {
+          sketchEraserToggle.checked = false;
+        }
+        updatePaletteSelection(color);
+      });
+    });
+  }
+
+  if (sketchEraserToggle) {
+    sketchEraserToggle.addEventListener('change', () => {
+      sketchState.isEraser = sketchEraserToggle.checked;
+    });
+  }
+
+  if (sketchClearBtn) {
+    sketchClearBtn.addEventListener('click', () => {
+      sketchState.cells = createGrid(sketchState.gridSize);
+      renderGrid();
+    });
+  }
+
+  if (sketchFillBtn) {
+    sketchFillBtn.addEventListener('click', () => {
+      const fillColor = sketchState.isEraser ? backgroundColor : sketchState.color;
+      sketchState.cells = Array.from({ length: sketchState.gridSize }, () =>
+        Array.from({ length: sketchState.gridSize }, () => fillColor)
+      );
+      renderGrid();
+    });
+  }
+
+  sketchState.cells = createGrid(sketchState.gridSize);
+  updatePaletteSelection(sketchState.color);
+  renderGrid();
+  isSketchInitialized = true;
+}
+
 function ensureSnakeModule() {
   if (!snakeModulePromise) {
     snakeModulePromise = import('./snake.js');
@@ -706,6 +1140,9 @@ function openApp(appId) {
 
   if (activeAppId === 'snake' && appId !== 'snake') {
     teardownSnakeApp();
+  }
+  if (activeAppId === 'mixtape' && appId !== 'mixtape') {
+    stopMixtapePlayback(true);
   }
 
   activeAppId = appId;
@@ -764,6 +1201,12 @@ function openApp(appId) {
         }
       });
   } else {
+    if (appId === 'mixtape') {
+      initializeMixtapeApp();
+    }
+    if (appId === 'sketch') {
+      initializeSketchApp();
+    }
     hideLoadingScreen();
   }
 }
@@ -772,6 +1215,9 @@ function closeAppDetail() {
   if (!appDetail) return;
   if (activeAppId === 'snake') {
     teardownSnakeApp();
+  }
+  if (activeAppId === 'mixtape') {
+    stopMixtapePlayback(true);
   }
   activeAppId = null;
   appDetail.classList.remove('active');

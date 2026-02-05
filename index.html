@@ -71,11 +71,12 @@
           <article class="app-card" data-app="mixtape">
             <div class="card-header">
               <span class="app-id">04</span>
-              <span class="status soon">soon</span>
+              <span class="status live">live</span>
             </div>
             <h3>just.<span>mixtape</span></h3>
-            <p>Create vaporwave playlists, neon cover art, and cosmic liner notes. The deck is spinning up...</p>
+            <p>Build shimmering tracklists and record neon-side mixes with animated tape decks.</p>
             <div class="card-footer">
+              <button class="card-cta" data-launch="mixtape">Enter app</button>
               <span class="chip flicker">audio</span>
               <span class="chip">visuals</span>
             </div>
@@ -84,11 +85,12 @@
           <article class="app-card" data-app="sketch">
             <div class="card-header">
               <span class="app-id">05</span>
-              <span class="status soon">soon</span>
+              <span class="status live">live</span>
             </div>
             <h3>just.<span>sketch</span></h3>
-            <p>AI-assisted doodle pad for pixel art storyboards. Loading new color palettes from the ether.</p>
+            <p>Pixel-first sketch studio with palettes, brush sizes, and instant grid remixes.</p>
             <div class="card-footer">
+              <button class="card-cta" data-launch="sketch">Enter app</button>
               <span class="chip">art</span>
               <span class="chip flicker">pixels</span>
             </div>
@@ -237,26 +239,115 @@
         </div>
 
         <div class="app-shell" data-app="mixtape">
-          <div class="placeholder">
-            <h2>just.<span>mixtape</span></h2>
-            <p>Analog vibes incoming. This module is warming the tubes.</p>
-            <div class="placeholder-marquee">
-              <span>coming soon</span>
-              <span>coming soon</span>
-              <span>coming soon</span>
-            </div>
+          <div class="mixtape-studio">
+            <header class="mixtape-header">
+              <div>
+                <h2>just.<span>mixtape</span></h2>
+                <p>Stack a neon setlist and record Side A &amp; Side B mixes in real time.</p>
+              </div>
+              <div class="mixtape-side-toggle">
+                <span class="label">Active Side</span>
+                <button id="mixtapeSideToggle" class="mixtape-button ghost" type="button">Side A</button>
+              </div>
+            </header>
+            <section class="mixtape-deck">
+              <div class="tape-reels">
+                <div class="tape-reel" aria-hidden="true"></div>
+                <div class="tape-reel" aria-hidden="true"></div>
+              </div>
+              <div class="tape-display">
+                <div class="tape-status">
+                  <span id="mixtapeStatus">Ready to record.</span>
+                  <span id="mixtapeDuration" class="tape-duration">00:00</span>
+                </div>
+                <div class="tape-progress">
+                  <div id="mixtapeProgress" class="tape-progress-fill"></div>
+                </div>
+              </div>
+              <div class="mixtape-controls">
+                <button id="mixtapeRecordBtn" class="mixtape-button" type="button">Record</button>
+                <button id="mixtapeStopBtn" class="mixtape-button ghost" type="button">Stop</button>
+                <button id="mixtapeShuffleBtn" class="mixtape-button ghost" type="button">Shuffle</button>
+                <button id="mixtapeClearBtn" class="mixtape-button ghost" type="button">Clear Side</button>
+              </div>
+            </section>
+            <section class="mixtape-grid">
+              <div class="mixtape-panel">
+                <h3>Track Library</h3>
+                <div id="mixtapeLibrary" class="track-library" aria-live="polite"></div>
+              </div>
+              <div class="mixtape-panel">
+                <h3>Side A</h3>
+                <ol id="mixtapeSideAList" class="tape-list"></ol>
+              </div>
+              <div class="mixtape-panel">
+                <h3>Side B</h3>
+                <ol id="mixtapeSideBList" class="tape-list"></ol>
+              </div>
+            </section>
           </div>
         </div>
 
         <div class="app-shell" data-app="sketch">
-          <div class="placeholder">
-            <h2>just.<span>sketch</span></h2>
-            <p>Prototype your worlds in pixels and pastel gradients. ETA: next transmission.</p>
-            <div class="placeholder-marquee glitch">
-              <span>loading palettes</span>
-              <span>loading palettes</span>
-              <span>loading palettes</span>
-            </div>
+          <div class="sketch-studio">
+            <header class="sketch-header">
+              <div>
+                <h2>just.<span>sketch</span></h2>
+                <p>Dial in a palette, paint the grid, and remix your pixel storyboards.</p>
+              </div>
+              <div class="sketch-actions">
+                <button id="sketchClearBtn" class="sketch-button ghost" type="button">Clear</button>
+                <button id="sketchFillBtn" class="sketch-button" type="button">Fill</button>
+              </div>
+            </header>
+            <section class="sketch-body">
+              <div class="sketch-canvas-shell">
+                <canvas id="sketchCanvas" width="512" height="512" aria-label="Pixel sketch canvas"></canvas>
+                <div class="sketch-hint">Click + drag to paint. Hold Shift to draw straight lines.</div>
+              </div>
+              <aside class="sketch-controls" aria-label="Sketch controls">
+                <div class="control-group">
+                  <label for="sketchGridSize">Grid Density</label>
+                  <select id="sketchGridSize">
+                    <option value="12">12 x 12</option>
+                    <option value="16" selected>16 x 16</option>
+                    <option value="20">20 x 20</option>
+                    <option value="24">24 x 24</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label for="sketchBrushSize">Brush Size</label>
+                  <select id="sketchBrushSize">
+                    <option value="1" selected>1 px</option>
+                    <option value="2">2 px</option>
+                    <option value="3">3 px</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label for="sketchColorInput">Custom Color</label>
+                  <input type="color" id="sketchColorInput" value="#ff2fd3" />
+                </div>
+                <div class="control-group">
+                  <span class="label">Palette</span>
+                  <div class="sketch-palette" id="sketchPalette">
+                    <button class="palette-swatch" type="button" data-color="#ff2fd3" aria-label="Neon Magenta"></button>
+                    <button class="palette-swatch" type="button" data-color="#00ffcc" aria-label="Terminal Mint"></button>
+                    <button class="palette-swatch" type="button" data-color="#ffd166" aria-label="Solar Gold"></button>
+                    <button class="palette-swatch" type="button" data-color="#7a5cff" aria-label="Ultraviolet"></button>
+                    <button class="palette-swatch" type="button" data-color="#ff6b6b" aria-label="Pulse Red"></button>
+                    <button class="palette-swatch" type="button" data-color="#4ecdc4" aria-label="Aqua"></button>
+                    <button class="palette-swatch" type="button" data-color="#1b998b" aria-label="Deep Teal"></button>
+                    <button class="palette-swatch" type="button" data-color="#f7fff7" aria-label="Glow White"></button>
+                  </div>
+                </div>
+                <div class="control-group toggle-row">
+                  <label class="sketch-toggle">
+                    <input type="checkbox" id="sketchEraserToggle" />
+                    <span>Eraser Mode</span>
+                  </label>
+                </div>
+              </aside>
+            </section>
           </div>
         </div>
 

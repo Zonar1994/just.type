@@ -1239,6 +1239,379 @@ body.app-open .home-view {
   color: var(--text-color);
 }
 
+/* ---------- Mixtape Studio ---------- */
+.mixtape-studio {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 24px 12px 12px;
+}
+
+.mixtape-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mixtape-header h2 {
+  font-size: 42px;
+  margin: 0 0 12px;
+}
+
+.mixtape-header h2 span {
+  color: var(--accent);
+}
+
+.mixtape-header p {
+  margin: 0;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.mixtape-side-toggle {
+  display: grid;
+  gap: 8px;
+  text-align: right;
+}
+
+.mixtape-side-toggle .label {
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mixtape-deck {
+  border-radius: 24px;
+  padding: 24px;
+  background: rgba(5, 0, 24, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 20px;
+}
+
+.tape-reels {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.tape-reel {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.05) 60%, transparent 100%);
+}
+
+.tape-reel::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 47, 211, 0.6);
+}
+
+.mixtape-deck.recording .tape-reel {
+  animation: reel-spin 1.4s linear infinite;
+}
+
+@keyframes reel-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.tape-display {
+  display: grid;
+  gap: 12px;
+}
+
+.tape-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tape-duration {
+  color: var(--accent);
+}
+
+.tape-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.tape-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.9), rgba(255, 47, 211, 0.9));
+  transition: width 0.2s ease;
+}
+
+.mixtape-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mixtape-button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 47, 211, 0.5);
+  background: rgba(255, 47, 211, 0.2);
+  color: var(--text-color);
+  font-family: 'VT323', 'Courier New', Courier, monospace;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mixtape-button.ghost {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.mixtape-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.mixtape-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.mixtape-panel {
+  background: rgba(5, 0, 24, 0.55);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.mixtape-panel h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.track-library {
+  display: grid;
+  gap: 10px;
+}
+
+.track-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.track-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 255, 204, 0.6);
+}
+
+.track-item span {
+  font-size: 16px;
+}
+
+.tape-list {
+  list-style: decimal-leading-zero;
+  padding-left: 24px;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tape-list li {
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- Sketch Studio ---------- */
+.sketch-studio {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 12px 12px;
+}
+
+.sketch-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sketch-header h2 {
+  font-size: 42px;
+  margin: 0 0 12px;
+}
+
+.sketch-header h2 span {
+  color: var(--accent);
+}
+
+.sketch-header p {
+  margin: 0;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sketch-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.sketch-button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 204, 0.45);
+  background: rgba(0, 255, 204, 0.2);
+  color: var(--text-color);
+  font-family: 'VT323', 'Courier New', Courier, monospace;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sketch-button.ghost {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sketch-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.sketch-body {
+  display: grid;
+  grid-template-columns: minmax(260px, 2fr) minmax(220px, 1fr);
+  gap: 24px;
+}
+
+.sketch-canvas-shell {
+  background: rgba(5, 0, 24, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+}
+
+#sketchCanvas {
+  width: min(520px, 100%);
+  height: auto;
+  border-radius: 16px;
+  background: #05000f;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
+
+.sketch-hint {
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sketch-controls {
+  background: rgba(5, 0, 24, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.sketch-controls .control-group {
+  display: grid;
+  gap: 10px;
+}
+
+.sketch-controls label,
+.sketch-controls .label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sketch-controls select,
+.sketch-controls input[type="color"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text-color);
+  font-family: 'VT323', 'Courier New', Courier, monospace;
+  font-size: 16px;
+}
+
+.sketch-palette {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.palette-swatch {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.palette-swatch:hover,
+.palette-swatch.active {
+  transform: scale(1.05);
+  border-color: rgba(0, 255, 204, 0.8);
+}
+
+.sketch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.sketch-toggle input {
+  accent-color: var(--accent);
+}
+
+.toggle-row {
+  margin-top: 8px;
+}
+
+@media (max-width: 960px) {
+  .sketch-body {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Placeholder Shells ---------- */
 .placeholder {
   margin: auto;
