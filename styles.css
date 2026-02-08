@@ -97,6 +97,19 @@ body.app-open .home-view {
   margin: 0 0 20px;
 }
 
+.hero-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.hero-logo {
+  width: 56px;
+  height: auto;
+  filter: drop-shadow(0 0 8px rgba(34, 158, 255, 0.55));
+}
+
 .hero-subtitle {
   font-size: 20px;
   line-height: 1.5;
